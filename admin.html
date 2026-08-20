@@ -87,6 +87,34 @@
         </div>
       </div>
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
+        <div class="flex flex-col gap-4 mb-5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h3 class="text-lg font-black text-slate-800">Faturamento por dia</h3>
+              <p class="text-sm text-slate-500 mt-1">Pedidos entregues no período selecionado</p>
+            </div>
+            <span id="dash-faturamento-periodo" class="text-lg font-black text-emerald-600">R$ 0,00</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div class="flex-1">
+              <label for="filtro-data-inicial" class="block text-xs font-bold uppercase text-slate-500 mb-1">Data inicial</label>
+              <input type="date" id="filtro-data-inicial" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <div class="flex-1">
+              <label for="filtro-data-final" class="block text-xs font-bold uppercase text-slate-500 mb-1">Data final</label>
+              <input type="date" id="filtro-data-final" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <button onclick="carregarFaturamentoPorDia()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition">
+              Atualizar
+            </button>
+          </div>
+        </div>
+        <div class="relative h-72">
+          <canvas id="grafico-faturamento-dia"></canvas>
+          <p id="mensagem-grafico-faturamento" class="absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-4 hidden"></p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
           <div>
             <h3 class="text-lg font-black text-slate-800">Produtos mais vendidos</h3>
@@ -393,6 +421,7 @@
     let produtosAdmin = [];
     let categoriasAdmin = [];
     let graficoMaisVendidos = null;
+    let graficoFaturamentoDia = null;
 
     // --- SEGURANÇA ---
     async function verificarAcesso() {
@@ -871,7 +900,114 @@
       }
     }
 
-    async function inicializarPainel() { await carregarCategorias(); await carregarProdutos(); await carregarMaisVendidos(); }
+    function formatarDataInput(data) {
+      return data.toISOString().split('T')[0];
+    }
+
+    function formatarMoeda(valor) {
+      return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`;
+    }
+
+    async function carregarFaturamentoPorDia() {
+      const canvas = document.getElementById('grafico-faturamento-dia');
+      const mensagem = document.getElementById('mensagem-grafico-faturamento');
+      const dataInicial = document.getElementById('filtro-data-inicial').value;
+      const dataFinal = document.getElementById('filtro-data-final').value;
+      const totalPeriodo = document.getElementById('dash-faturamento-periodo');
+
+      if (!dataInicial || !dataFinal || dataInicial > dataFinal) {
+        totalPeriodo.innerText = 'Período inválido';
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Informe um período válido para consultar o faturamento.';
+        mensagem.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const dataFinalInclusiva = new Date(`${dataFinal}T23:59:59.999`);
+        const { data: pedidos, error } = await supabaseClient
+          .from('pedidos')
+          .select('valor_total, data_pedido, status')
+          .eq('status', 'entregue')
+          .gte('data_pedido', `${dataInicial}T00:00:00.000`)
+          .lte('data_pedido', dataFinalInclusiva.toISOString());
+        if (error) throw error;
+
+        const faturamentoPorDia = {};
+        (pedidos || []).forEach(pedido => {
+          const dia = pedido.data_pedido.slice(0, 10);
+          faturamentoPorDia[dia] = (faturamentoPorDia[dia] || 0) + (Number(pedido.valor_total) || 0);
+        });
+
+        const labels = [];
+        const valores = [];
+        const dataAtual = new Date(`${dataInicial}T12:00:00`);
+        const dataLimite = new Date(`${dataFinal}T12:00:00`);
+        while (dataAtual <= dataLimite) {
+          const dia = formatarDataInput(dataAtual);
+          labels.push(dataAtual.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+          valores.push(faturamentoPorDia[dia] || 0);
+          dataAtual.setDate(dataAtual.getDate() + 1);
+        }
+
+        const total = valores.reduce((soma, valor) => soma + valor, 0);
+        totalPeriodo.innerText = formatarMoeda(total);
+        if (graficoFaturamentoDia) graficoFaturamentoDia.destroy();
+
+        if (!pedidos || !pedidos.length) {
+          canvas.classList.add('hidden');
+          mensagem.innerText = 'Não há faturamento de pedidos entregues neste período.';
+          mensagem.classList.remove('hidden');
+          return;
+        }
+
+        canvas.classList.remove('hidden');
+        mensagem.classList.add('hidden');
+        graficoFaturamentoDia = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Faturamento',
+              data: valores,
+              backgroundColor: '#10b981',
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: context => formatarMoeda(context.raw) } }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#64748b', maxTicksLimit: 15 } },
+              y: { beginAtZero: true, ticks: { color: '#64748b', callback: valor => formatarMoeda(valor) } }
+            }
+          }
+        });
+      } catch (error) {
+        totalPeriodo.innerText = 'R$ 0,00';
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Não foi possível carregar o faturamento do período.';
+        mensagem.classList.remove('hidden');
+        console.error('Erro ao carregar faturamento por dia:', error);
+      }
+    }
+
+    async function inicializarPainel() {
+      const hoje = new Date();
+      const inicio = new Date(hoje);
+      inicio.setDate(hoje.getDate() - 29);
+      document.getElementById('filtro-data-inicial').value = formatarDataInput(inicio);
+      document.getElementById('filtro-data-final').value = formatarDataInput(hoje);
+      await carregarCategorias();
+      await carregarProdutos();
+      await carregarMaisVendidos();
+      await carregarFaturamentoPorDia();
+    }
     document.addEventListener('DOMContentLoaded', inicializarPainel);
   </script>
 </body>
