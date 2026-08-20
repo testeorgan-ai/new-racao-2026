@@ -1,0 +1,29 @@
+# 🔐 Arquivos de configuração sensível
+config.js
+.env
+.env.local
+.env.*.local
+
+# 📁 Node modules (se usar)
+node_modules/
+package-lock.json
+yarn.lock
+
+# 🔧 IDE e editores
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 🧪 Testes e logs
+*.log
+.cache/
+dist/
+build/
+
+# 🗝️ Segurança
+*.pem
+*.key
+secrets.json
