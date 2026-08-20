@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <style>
@@ -56,7 +57,7 @@
       </button>
 
       <button onclick="sairDoSistema()" class="menu-item w-full flex items-center gap-3 text-red-400 hover:text-white hover:bg-red-500/20 px-4 py-3 rounded-xl font-semibold transition text-left mt-4">
-        <i data-lucide="log-out" class="w-5 h-5"></i> Sair do Sistema
+        <i data-lucide="log-out" class="w-5 h-5"></i> Sair e voltar à loja
       </button>
     </nav>
   </aside>
@@ -83,6 +84,19 @@
             <p class="text-sm text-slate-500 font-bold uppercase">Total de Produtos</p>
             <p id="dash-total-produtos" class="text-3xl font-black text-slate-800">--</p>
           </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+          <div>
+            <h3 class="text-lg font-black text-slate-800">Produtos mais vendidos</h3>
+            <p class="text-sm text-slate-500 mt-1">Pedidos entregues</p>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Top 10</span>
+        </div>
+        <div class="relative h-72">
+          <canvas id="grafico-mais-vendidos"></canvas>
+          <p id="mensagem-grafico-vendas" class="absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-4 hidden"></p>
         </div>
       </div>
     </section>
@@ -378,6 +392,7 @@
 
     let produtosAdmin = [];
     let categoriasAdmin = [];
+    let graficoMaisVendidos = null;
 
     // --- SEGURANÇA ---
     async function verificarAcesso() {
@@ -388,7 +403,7 @@
 
     async function sairDoSistema() {
       await supabaseClient.auth.signOut();
-      window.location.replace('login.html');
+      window.location.replace('index.html');
     }
 
     // --- NAVEGAÇÃO ---
@@ -784,12 +799,79 @@
         const { error } = await supabaseClient.from('pedidos').update({ status: novoStatus }).eq('id', id);
         if (error) throw error;
         carregarPedidos();
+        carregarMaisVendidos();
       } catch(e) {
         alert('Erro: ' + e.message);
       }
     }
 
-    async function inicializarPainel() { await carregarCategorias(); await carregarProdutos(); }
+    async function carregarMaisVendidos() {
+      const canvas = document.getElementById('grafico-mais-vendidos');
+      const mensagem = document.getElementById('mensagem-grafico-vendas');
+      if (!canvas || !mensagem) return;
+
+      try {
+        const { data: pedidos, error } = await supabaseClient
+          .from('pedidos')
+          .select('itens, status')
+          .eq('status', 'entregue');
+        if (error) throw error;
+
+        const vendas = {};
+        (pedidos || []).forEach(pedido => {
+          const itens = typeof pedido.itens === 'string' ? JSON.parse(pedido.itens) : pedido.itens;
+          (Array.isArray(itens) ? itens : []).forEach(item => {
+            const nome = item.nome || 'Produto sem nome';
+            const quantidade = Number(item.quantidade) || 0;
+            vendas[nome] = (vendas[nome] || 0) + quantidade;
+          });
+        });
+
+        const ranking = Object.entries(vendas)
+          .sort(([, quantidadeA], [, quantidadeB]) => quantidadeB - quantidadeA)
+          .slice(0, 10);
+
+        if (graficoMaisVendidos) graficoMaisVendidos.destroy();
+        if (!ranking.length) {
+          canvas.classList.add('hidden');
+          mensagem.innerText = 'Ainda não há produtos vendidos em pedidos entregues.';
+          mensagem.classList.remove('hidden');
+          return;
+        }
+
+        canvas.classList.remove('hidden');
+        mensagem.classList.add('hidden');
+        graficoMaisVendidos = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels: ranking.map(([nome]) => nome),
+            datasets: [{
+              label: 'Unidades vendidas',
+              data: ranking.map(([, quantidade]) => quantidade),
+              backgroundColor: '#fbbf24',
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#64748b' } },
+              y: { beginAtZero: true, ticks: { precision: 0, color: '#64748b' } }
+            }
+          }
+        });
+      } catch (error) {
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Não foi possível carregar o gráfico de vendas.';
+        mensagem.classList.remove('hidden');
+        console.error('Erro ao carregar produtos mais vendidos:', error);
+      }
+    }
+
+    async function inicializarPainel() { await carregarCategorias(); await carregarProdutos(); await carregarMaisVendidos(); }
     document.addEventListener('DOMContentLoaded', inicializarPainel);
   </script>
 </body>
