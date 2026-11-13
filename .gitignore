@@ -1,5 +1,5 @@
 # 🔐 Arquivos de configuração sensível
-config.js
+
 .env
 .env.local
 .env.*.local

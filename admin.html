@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Painel Administrativo | PetShop Express</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -167,6 +168,29 @@
             </div>
           </div>
 
+          <div class="p-5 border border-emerald-200 rounded-xl bg-emerald-50">
+            <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="qr-code" class="w-5 h-5 text-emerald-600"></i> Dados do PIX</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1">Chave PIX</label>
+                <input type="text" id="conf-pix-chave" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Nome do recebedor</label>
+                <input type="text" id="conf-pix-beneficiario" placeholder="Nome da loja ou titular" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Cidade</label>
+                <input type="text" id="conf-pix-cidade" placeholder="Ex.: Mongaguá" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1">Instruções para o cliente</label>
+                <textarea id="conf-pix-instrucoes" rows="2" placeholder="Envie o comprovante pelo WhatsApp após o pagamento." class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400"></textarea>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">Esses dados serão exibidos somente quando o cliente escolher PIX.</p>
+          </div>
+
           <div class="flex justify-end">
             <button onclick="salvarConfiguracoes()" id="btn-salvar-config" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-8 py-3 rounded-xl font-bold shadow-sm transition">
               Salvar Alterações no Site
@@ -220,12 +244,26 @@
     </section>
 
     <section id="aba-produtos" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">Cadastro em massa</h3>
+            <p class="text-sm text-slate-500 mt-1">Importe e atualize produtos por planilha CSV, ou exporte o catálogo atual.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button onclick="baixarModeloProdutos()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50">Baixar modelo CSV</button>
+            <button onclick="exportarProdutosCSV()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50">Exportar produtos</button>
+            <button onclick="abrirImportacaoProdutos()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">Importar planilha</button>
+          </div>
+        </div>
+      </div>
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
                 <th class="p-4 font-semibold">Produto</th>
+                <th class="p-4 font-semibold">SKU</th>
                 <th class="p-4 font-semibold">Categoria</th>
                 <th class="p-4 font-semibold">Preço</th>
                 <th class="p-4 font-semibold text-right">Ações</th>
@@ -352,6 +390,51 @@
     </section>
   </main>
 
+  <div id="modal-importacao-produtos" class="fixed inset-0 bg-slate-900/70 z-[110] hidden items-center justify-center p-3 md:p-6">
+    <div class="bg-white w-full max-w-6xl max-h-[95vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="text-lg md:text-xl font-black text-slate-800">Importar produtos por CSV</h3>
+          <p class="text-xs md:text-sm text-slate-500 mt-1">Planilhas do Excel/Google Sheets podem ser exportadas como CSV.</p>
+        </div>
+        <button onclick="fecharImportacaoProdutos()" class="text-slate-500 hover:text-slate-800 bg-white p-2 rounded-full shadow-sm" aria-label="Fechar importação"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-5">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label for="arquivo-importacao-produtos" class="block text-sm font-bold text-slate-700 mb-2">Arquivo CSV</label>
+            <input id="arquivo-importacao-produtos" type="file" accept=".csv,text/csv" onchange="prepararImportacaoProdutos(event)" class="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-amber-100 file:text-amber-800">
+            <p class="text-xs text-slate-500 mt-2">Antes de importar, execute a versão atualizada de SQL_SUPABASE_UNICO.sql no Supabase. Use SKU, nome, descricao, preco, categoria, imagem_url, tag_texto e tag_cor; categoria deve ser o slug cadastrado.</p>
+          </div>
+          <div>
+            <label for="modo-importacao-produtos" class="block text-sm font-bold text-slate-700 mb-2">Quando o SKU já existir</label>
+            <select id="modo-importacao-produtos" onchange="atualizarPreviaImportacao()" class="w-full border border-slate-300 rounded-xl px-4 py-2.5">
+              <option value="somente_novos">Ignorar existentes e importar somente novos</option>
+              <option value="atualizar">Atualizar produto existente pelo SKU</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-2">No modo atualizar, os campos da planilha substituem os dados atuais do produto.</p>
+          </div>
+        </div>
+        <div id="resumo-importacao-produtos" class="text-sm text-slate-600 bg-slate-50 rounded-xl p-4">Selecione o arquivo CSV para validar os produtos.</div>
+        <div class="border border-slate-200 rounded-xl overflow-auto max-h-[42vh]">
+          <table class="w-full text-left text-sm min-w-[800px]">
+            <thead class="sticky top-0 bg-slate-100 text-slate-600">
+              <tr><th class="p-3">Linha</th><th class="p-3">SKU</th><th class="p-3">Produto</th><th class="p-3">Categoria</th><th class="p-3">Preço</th><th class="p-3">Validação</th></tr>
+            </thead>
+            <tbody id="previa-importacao-produtos"><tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum arquivo selecionado.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between gap-3">
+        <p id="resultado-importacao-produtos" class="text-sm text-slate-600 self-center"></p>
+        <div class="flex gap-2 justify-end">
+          <button onclick="fecharImportacaoProdutos()" class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200">Fechar</button>
+          <button id="btn-confirmar-importacao" onclick="confirmarImportacaoProdutos()" disabled class="px-5 py-2.5 rounded-xl font-bold bg-amber-400 text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed">Importar produtos válidos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-produto" class="fixed inset-0 bg-slate-900/70 z-[100] hidden flex justify-center items-center backdrop-blur-sm p-4">
     <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[95vh] md:max-h-[90vh]">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl">
@@ -363,6 +446,10 @@
         <form id="form-produto" class="space-y-4 md:space-y-5">
           <input type="hidden" id="produto-id">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">SKU (opcional)</label>
+              <input type="text" id="prod-sku" maxlength="80" placeholder="Ex.: RACAO-001" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none uppercase">
+            </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-bold text-slate-700 mb-1">Nome do Produto</label>
               <input type="text" id="prod-nome" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
@@ -386,7 +473,7 @@
             <div>
               <label class="block text-sm font-bold text-slate-700 mb-1">Cor da Tag</label>
               <select id="prod-tag-cor" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                <option value="amber-600">Amarelo</option><option value="emerald-600">Verde</option><option value="rose-600">Vermelho</option><option value="indigo-600">Azul</option>
+                <option value="amber-600">Amarelo</option><option value="emerald-600">Verde</option><option value="rose-600">Vermelho</option><option value="indigo-600">Índigo</option><option value="blue-500">Azul</option>
               </select>
             </div>
             <div class="md:col-span-2 border-2 border-dashed border-slate-300 rounded-2xl p-4 md:p-6 text-center bg-slate-50">
@@ -418,8 +505,17 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const BUCKET_NAME = 'produtos-imagens';
 
+    function mensagemErroImagem(error) {
+      const detalhe = error?.message || 'Erro desconhecido ao enviar imagem.';
+      if (/bucket|storage|row.level security|permission denied|unauthorized/i.test(detalhe)) {
+        return `Falha no armazenamento da imagem: ${detalhe}\n\nNo Supabase, execute a seção "11) Storage para imagens de produtos e banner" do arquivo SQL_SUPABASE_UNICO.sql. Confirme também que o bucket "${BUCKET_NAME}" existe e que você está conectado ao painel como usuário autenticado.`;
+      }
+      return detalhe;
+    }
+
     let produtosAdmin = [];
     let categoriasAdmin = [];
+    let linhasImportacaoProdutos = [];
     let graficoMaisVendidos = null;
     let graficoFaturamentoDia = null;
 
@@ -475,6 +571,10 @@
         document.getElementById('conf-hero-img-atual').value = data.hero_imagem_url || '';
         document.getElementById('conf-banner-titulo').value = data.banner_titulo || '';
         document.getElementById('conf-banner-sub').value = data.banner_subtitulo || '';
+        document.getElementById('conf-pix-chave').value = data.pix_chave || '';
+        document.getElementById('conf-pix-beneficiario').value = data.pix_beneficiario || '';
+        document.getElementById('conf-pix-cidade').value = data.pix_cidade || '';
+        document.getElementById('conf-pix-instrucoes').value = data.pix_instrucoes || '';
       }
     }
 
@@ -500,14 +600,18 @@
           hero_produto_nome: document.getElementById('conf-hero-nome').value,
           hero_produto_preco: parseFloat(document.getElementById('conf-hero-preco').value) || 0,
           banner_titulo: document.getElementById('conf-banner-titulo').value,
-          banner_subtitulo: document.getElementById('conf-banner-sub').value
+          banner_subtitulo: document.getElementById('conf-banner-sub').value,
+          pix_chave: document.getElementById('conf-pix-chave').value.trim(),
+          pix_beneficiario: document.getElementById('conf-pix-beneficiario').value.trim(),
+          pix_cidade: document.getElementById('conf-pix-cidade').value.trim(),
+          pix_instrucoes: document.getElementById('conf-pix-instrucoes').value.trim()
         };
 
         const { error } = await supabaseClient.from('configuracoes').update(payload).eq('id', 1);
         if (error) throw error;
         alert('Promoções atualizadas com sucesso!');
       } catch(e) {
-        alert('Erro: ' + e.message);
+        alert('Erro: ' + mensagemErroImagem(e));
       } finally {
         btn.innerText = 'Salvar Alterações no Site'; btn.disabled = false;
       }
@@ -545,20 +649,300 @@
       produtosAdmin.forEach(prod => {
         const catAtrelada = categoriasAdmin.find(c => c.slug === prod.categoria);
         const nomeCategoria = catAtrelada ? catAtrelada.titulo : prod.categoria;
-        tbody.innerHTML += `<tr class="border-b"><td class="p-4 flex items-center gap-3"><img src="${prod.imagem_url}" class="w-10 h-10 rounded-lg object-cover"> <p class="font-bold truncate">${prod.nome}</p></td><td class="p-4 text-slate-600">${nomeCategoria}</td><td class="p-4 font-bold text-emerald-600">R$ ${Number(prod.preco).toFixed(2).replace('.',',')}</td><td class="p-4 text-right"><button onclick='abrirModal(${JSON.stringify(prod)})' class="text-indigo-500 p-2 mr-1"><i data-lucide="edit" class="w-5 h-5"></i></button><button onclick="excluirProduto(${prod.id})" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td></tr>`;
+        tbody.innerHTML += `<tr class="border-b"><td class="p-4 flex items-center gap-3"><img src="${escapeHtml(prod.imagem_url || 'favicon.svg')}" class="w-10 h-10 rounded-lg object-cover" alt=""><p class="font-bold truncate">${escapeHtml(prod.nome)}</p></td><td class="p-4 text-slate-600">${escapeHtml(prod.sku || '-')}</td><td class="p-4 text-slate-600">${escapeHtml(nomeCategoria)}</td><td class="p-4 font-bold text-emerald-600">R$ ${Number(prod.preco).toFixed(2).replace('.',',')}</td><td class="p-4 text-right"><button onclick="editarProdutoPorId(${Number(prod.id)})" class="text-indigo-500 p-2 mr-1" aria-label="Editar ${escapeHtml(prod.nome)}"><i data-lucide="edit" class="w-5 h-5"></i></button><button onclick="excluirProduto(${Number(prod.id)})" class="text-red-500 p-2" aria-label="Excluir ${escapeHtml(prod.nome)}"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td></tr>`;
       });
       lucide.createIcons();
     }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    function editarProdutoPorId(id) {
+      const produto = produtosAdmin.find(item => Number(item.id) === Number(id));
+      if (produto) abrirModal(produto);
+    }
+
     function abrirModal(p = null) {
       document.getElementById('form-produto').reset(); 
       if (p) {
-        document.getElementById('titulo-modal').innerText = 'Editar Produto'; document.getElementById('produto-id').value = p.id; document.getElementById('prod-nome').value = p.nome; document.getElementById('prod-preco').value = p.preco; document.getElementById('prod-categoria').value = p.categoria; document.getElementById('prod-descricao').value = p.descricao; document.getElementById('prod-tag-texto').value = p.tag_texto; document.getElementById('prod-tag-cor').value = p.tag_cor; document.getElementById('prod-imagem-url-atual').value = p.imagem_url;
+        document.getElementById('titulo-modal').innerText = 'Editar Produto'; document.getElementById('produto-id').value = p.id; document.getElementById('prod-sku').value = p.sku || ''; document.getElementById('prod-nome').value = p.nome; document.getElementById('prod-preco').value = p.preco; document.getElementById('prod-categoria').value = p.categoria; document.getElementById('prod-descricao').value = p.descricao; document.getElementById('prod-tag-texto').value = p.tag_texto; document.getElementById('prod-tag-cor').value = p.tag_cor; document.getElementById('prod-imagem-url-atual').value = p.imagem_url;
       } else {
-        document.getElementById('titulo-modal').innerText = 'Novo Produto'; document.getElementById('produto-id').value = ''; document.getElementById('prod-imagem-url-atual').value = '';
+        document.getElementById('titulo-modal').innerText = 'Novo Produto'; document.getElementById('produto-id').value = ''; document.getElementById('prod-sku').value = ''; document.getElementById('prod-imagem-url-atual').value = '';
       }
       document.getElementById('modal-produto').classList.remove('hidden'); document.getElementById('modal-produto').classList.add('flex');
     }
     function fecharModal() { document.getElementById('modal-produto').classList.add('hidden'); document.getElementById('modal-produto').classList.remove('flex'); }
+
+    // --- IMPORTAÇÃO E EXPORTAÇÃO EM LOTE ---
+    const COLUNAS_CSV_PRODUTOS = ['sku', 'nome', 'descricao', 'preco', 'categoria', 'imagem_url', 'tag_texto', 'tag_cor'];
+    const CORES_TAG_PRODUTO = ['amber-600', 'emerald-600', 'rose-600', 'indigo-600', 'blue-500'];
+
+    function baixarCSVProdutos(nomeArquivo, linhas) {
+      const csv = '\uFEFF' + linhas.map(linha => linha.map(valor => `"${String(valor ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function baixarModeloProdutos() {
+      baixarCSVProdutos('modelo-produtos.csv', [
+        COLUNAS_CSV_PRODUTOS,
+        ['RACAO-001', 'Ração Premium para Cães', 'Descrição do produto', '89,90', 'racoes', '', 'Destaque', 'amber-600']
+      ]);
+    }
+
+    function exportarProdutosCSV() {
+      baixarCSVProdutos('produtos-exportados.csv', [
+        COLUNAS_CSV_PRODUTOS,
+        ...produtosAdmin.map(produto => COLUNAS_CSV_PRODUTOS.map(coluna => produto[coluna] ?? ''))
+      ]);
+    }
+
+    function abrirImportacaoProdutos() {
+      linhasImportacaoProdutos = [];
+      document.getElementById('arquivo-importacao-produtos').value = '';
+      document.getElementById('resultado-importacao-produtos').innerText = '';
+      document.getElementById('resumo-importacao-produtos').innerText = 'Selecione o arquivo CSV para validar os produtos.';
+      document.getElementById('previa-importacao-produtos').innerHTML = '<tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum arquivo selecionado.</td></tr>';
+      document.getElementById('btn-confirmar-importacao').disabled = true;
+      document.getElementById('modal-importacao-produtos').classList.remove('hidden');
+      document.getElementById('modal-importacao-produtos').classList.add('flex');
+    }
+
+    function fecharImportacaoProdutos() {
+      document.getElementById('modal-importacao-produtos').classList.add('hidden');
+      document.getElementById('modal-importacao-produtos').classList.remove('flex');
+    }
+
+    function lerLinhasCSV(texto, delimitador) {
+      const linhas = [];
+      let linha = [];
+      let campo = '';
+      let entreAspas = false;
+
+      for (let i = 0; i < texto.length; i++) {
+        const caractere = texto[i];
+        if (entreAspas) {
+          if (caractere === '"' && texto[i + 1] === '"') {
+            campo += '"';
+            i++;
+          } else if (caractere === '"') {
+            entreAspas = false;
+          } else {
+            campo += caractere;
+          }
+        } else if (caractere === '"' && campo.length === 0) {
+          entreAspas = true;
+        } else if (caractere === delimitador) {
+          linha.push(campo);
+          campo = '';
+        } else if (caractere === '\n' || caractere === '\r') {
+          if (caractere === '\r' && texto[i + 1] === '\n') i++;
+          linha.push(campo);
+          if (linha.some(valor => valor.trim())) linhas.push(linha);
+          linha = [];
+          campo = '';
+        } else {
+          campo += caractere;
+        }
+      }
+
+      linha.push(campo);
+      if (linha.some(valor => valor.trim())) linhas.push(linha);
+      return linhas;
+    }
+
+    function normalizarCabecalhoCSV(valor) {
+      return String(valor || '').trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s-]+/g, '_');
+    }
+
+    function converterPrecoCSV(valor) {
+      let preco = String(valor || '').trim().replace(/[R$\s]/g, '');
+      if (preco.includes(',')) preco = preco.replace(/\./g, '').replace(',', '.');
+      const numero = Number(preco);
+      return Number.isFinite(numero) ? numero : NaN;
+    }
+
+    function atualizarPreviaImportacao() {
+      const corpo = document.getElementById('previa-importacao-produtos');
+      const resumo = document.getElementById('resumo-importacao-produtos');
+      const botao = document.getElementById('btn-confirmar-importacao');
+      const modo = document.getElementById('modo-importacao-produtos').value;
+      const skusExistentes = new Set(produtosAdmin.map(produto => String(produto.sku || '').trim().toUpperCase()).filter(Boolean));
+      const validas = linhasImportacaoProdutos.filter(linha => linha.erros.length === 0 && (modo === 'atualizar' || !skusExistentes.has(linha.produto.sku)));
+      const ignoradas = linhasImportacaoProdutos.filter(linha => linha.erros.length === 0 && modo === 'somente_novos' && skusExistentes.has(linha.produto.sku)).length;
+      const invalidas = linhasImportacaoProdutos.filter(linha => linha.erros.length > 0).length;
+
+      corpo.replaceChildren();
+      if (!linhasImportacaoProdutos.length) {
+        corpo.innerHTML = '<tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum produto encontrado no arquivo.</td></tr>';
+      } else {
+        linhasImportacaoProdutos.slice(0, 100).forEach(linha => {
+          const existente = skusExistentes.has(linha.produto.sku);
+          const status = linha.erros.length
+            ? linha.erros.join('; ')
+            : (existente && modo === 'somente_novos' ? 'SKU já cadastrado: será ignorado' : existente ? 'SKU existente: será atualizado' : 'Pronto para importar');
+          const tr = document.createElement('tr');
+          [linha.numero, linha.produto.sku, linha.produto.nome, linha.produto.categoria, Number.isFinite(linha.produto.preco) ? `R$ ${linha.produto.preco.toFixed(2).replace('.', ',')}` : '', status].forEach((valor, indice) => {
+            const td = document.createElement('td');
+            td.className = 'p-3 border-t border-slate-100';
+            td.innerText = String(valor);
+            if (indice === 5) td.classList.add(linha.erros.length ? 'text-red-600' : existente && modo === 'somente_novos' ? 'text-amber-700' : 'text-emerald-700');
+            tr.appendChild(td);
+          });
+          corpo.appendChild(tr);
+        });
+        if (linhasImportacaoProdutos.length > 100) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 6;
+          td.className = 'p-3 text-center text-slate-500 border-t';
+          td.innerText = `Prévia limitada às primeiras 100 de ${linhasImportacaoProdutos.length} linhas.`;
+          tr.appendChild(td);
+          corpo.appendChild(tr);
+        }
+      }
+
+      resumo.innerText = `${linhasImportacaoProdutos.length} linha(s) no arquivo • ${validas.length} pronta(s) para importar${modo === 'atualizar' ? ' (novos ou atualizados pelo SKU)' : ''} • ${ignoradas} existente(s) ignorada(s) • ${invalidas} com erro.`;
+      botao.disabled = validas.length === 0;
+    }
+
+    async function prepararImportacaoProdutos(evento) {
+      const arquivo = evento.target.files?.[0];
+      if (!arquivo) return;
+      if (arquivo.size > 2 * 1024 * 1024) {
+        alert('O CSV deve ter no máximo 2 MB.');
+        evento.target.value = '';
+        return;
+      }
+
+      try {
+        const texto = (await arquivo.text()).replace(/^\uFEFF/, '');
+        const delimitadores = [',', ';', '\t'];
+        const delimitador = delimitadores
+          .map(item => ({ item, colunas: lerLinhasCSV(texto, item)[0]?.length || 0 }))
+          .sort((a, b) => b.colunas - a.colunas)[0].item;
+        const linhas = lerLinhasCSV(texto, delimitador);
+        if (linhas.length < 2) throw new Error('O arquivo precisa ter cabeçalho e pelo menos uma linha de produto.');
+
+        const cabecalhos = linhas[0].map(normalizarCabecalhoCSV);
+        const aliases = {
+          sku: ['sku', 'codigo', 'codigo_produto'],
+          nome: ['nome', 'produto', 'name'],
+          descricao: ['descricao', 'description'],
+          preco: ['preco', 'price', 'valor'],
+          categoria: ['categoria', 'category', 'slug_categoria'],
+          imagem_url: ['imagem_url', 'image_url', 'url_imagem', 'imagem', 'foto'],
+          tag_texto: ['tag_texto', 'tag', 'selo'],
+          tag_cor: ['tag_cor', 'cor_tag']
+        };
+        const indices = {};
+        Object.entries(aliases).forEach(([campo, nomes]) => {
+          indices[campo] = cabecalhos.findIndex(cabecalho => nomes.includes(cabecalho));
+        });
+        const faltantes = ['sku', 'nome', 'preco', 'categoria'].filter(campo => indices[campo] < 0);
+        if (faltantes.length) throw new Error(`Colunas obrigatórias ausentes: ${faltantes.join(', ')}.`);
+
+        const slugsCategorias = new Set(categoriasAdmin.map(categoria => String(categoria.slug).trim().toLowerCase()));
+        const skusNoArquivo = new Set();
+        linhasImportacaoProdutos = linhas.slice(1).map((colunas, indice) => {
+          const ler = campo => indices[campo] < 0 ? '' : String(colunas[indices[campo]] || '').trim();
+          const sku = ler('sku').toUpperCase();
+          const preco = converterPrecoCSV(ler('preco'));
+          const categoria = ler('categoria').toLowerCase();
+          const imagemUrl = ler('imagem_url');
+          const produto = {
+            sku,
+            nome: ler('nome'),
+            descricao: ler('descricao'),
+            preco,
+            categoria,
+            imagem_url: imagemUrl,
+            tag_texto: ler('tag_texto'),
+            tag_cor: ler('tag_cor') || 'amber-600'
+          };
+          const erros = [];
+          if (!produto.sku) erros.push('SKU obrigatório');
+          else if (skusNoArquivo.has(produto.sku)) erros.push('SKU repetido no arquivo');
+          else skusNoArquivo.add(produto.sku);
+          if (!produto.nome) erros.push('Nome obrigatório');
+          if (!Number.isFinite(preco) || preco < 0) erros.push('Preço inválido');
+          if (!produto.categoria || !slugsCategorias.has(produto.categoria)) erros.push('Categoria não encontrada (use o slug)');
+          if (imagemUrl) {
+            try {
+              const url = new URL(imagemUrl);
+              if (!['http:', 'https:'].includes(url.protocol)) erros.push('URL da imagem deve usar http ou https');
+            } catch {
+              erros.push('URL da imagem inválida');
+            }
+          }
+          if (!CORES_TAG_PRODUTO.includes(produto.tag_cor)) erros.push(`Cor da tag inválida (${CORES_TAG_PRODUTO.join(', ')})`);
+          return { numero: indice + 2, produto, erros };
+        });
+        document.getElementById('resultado-importacao-produtos').innerText = '';
+        atualizarPreviaImportacao();
+      } catch (erro) {
+        linhasImportacaoProdutos = [];
+        document.getElementById('resumo-importacao-produtos').innerText = erro.message;
+        document.getElementById('btn-confirmar-importacao').disabled = true;
+      }
+    }
+
+    async function confirmarImportacaoProdutos() {
+      const botao = document.getElementById('btn-confirmar-importacao');
+      const modo = document.getElementById('modo-importacao-produtos').value;
+      const skusExistentes = new Set(produtosAdmin.map(produto => String(produto.sku || '').trim().toUpperCase()).filter(Boolean));
+      const selecionadas = linhasImportacaoProdutos.filter(linha =>
+        linha.erros.length === 0 && (modo === 'atualizar' || !skusExistentes.has(linha.produto.sku))
+      );
+      if (!selecionadas.length) return;
+      if (!confirm(`Confirmar a importação de ${selecionadas.length} produto(s)?`)) return;
+
+      botao.disabled = true;
+      botao.innerText = 'Importando...';
+      const falhas = [];
+      let processadas = 0;
+      try {
+        for (let inicio = 0; inicio < selecionadas.length; inicio += 50) {
+          const lote = selecionadas.slice(inicio, inicio + 50);
+          const produtos = lote.map(linha => linha.produto);
+          const { error } = modo === 'atualizar'
+            ? await supabaseClient.from('produtos').upsert(produtos, { onConflict: 'sku' })
+            : await supabaseClient.from('produtos').insert(produtos);
+          if (error) {
+            lote.forEach(linha => falhas.push(`Linha ${linha.numero} (SKU ${linha.produto.sku}): ${error.message}`));
+          } else {
+            processadas += lote.length;
+          }
+        }
+        await carregarProdutos();
+        const detalheFalhas = falhas.slice(0, 5).join('\n');
+        const resumo = `${processadas} produto(s) processado(s). ${falhas.length} falha(s).${falhas.length > 5 ? ` Mais ${falhas.length - 5} falha(s).` : ''}`;
+        document.getElementById('resultado-importacao-produtos').innerText = `${resumo}${detalheFalhas ? `\n${detalheFalhas}` : ''}`;
+        document.getElementById('resultado-importacao-produtos').classList.toggle('text-red-600', falhas.length > 0);
+        document.getElementById('resultado-importacao-produtos').classList.toggle('text-emerald-700', falhas.length === 0);
+        if (falhas.length === 0) {
+          linhasImportacaoProdutos = [];
+          atualizarPreviaImportacao();
+          alert(resumo);
+        }
+      } catch (erro) {
+        document.getElementById('resultado-importacao-produtos').innerText = `Erro ao importar: ${erro.message}`;
+        document.getElementById('resultado-importacao-produtos').classList.add('text-red-600');
+      } finally {
+        botao.innerText = 'Importar produtos válidos';
+        atualizarPreviaImportacao();
+      }
+    }
 
     // --- UPLOAD WEBP E GALERIA ---
     async function otimizarImagemParaWebP(file) {
@@ -587,10 +971,14 @@
           const { data: urlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(fileName); finalImageUrl = urlData.publicUrl;
         }
         if (!finalImageUrl) throw new Error('Envie uma imagem.');
-        const dados = { nome: document.getElementById('prod-nome').value, preco: parseFloat(document.getElementById('prod-preco').value), categoria: document.getElementById('prod-categoria').value, descricao: document.getElementById('prod-descricao').value, tag_texto: document.getElementById('prod-tag-texto').value, tag_cor: document.getElementById('prod-tag-cor').value, imagem_url: finalImageUrl };
-        if (id) await supabaseClient.from('produtos').update(dados).eq('id', id); else await supabaseClient.from('produtos').insert([dados]);
-        fecharModal(); carregarProdutos(); alert('Salvo com sucesso!');
-      } catch (error) { alert('Erro: ' + error.message); } finally { btn.innerHTML = 'Salvar Produto'; btn.disabled = false; }
+        const sku = document.getElementById('prod-sku').value.trim().toUpperCase();
+        const dados = { sku: sku || null, nome: document.getElementById('prod-nome').value.trim(), preco: parseFloat(document.getElementById('prod-preco').value), categoria: document.getElementById('prod-categoria').value, descricao: document.getElementById('prod-descricao').value.trim(), tag_texto: document.getElementById('prod-tag-texto').value.trim(), tag_cor: document.getElementById('prod-tag-cor').value, imagem_url: finalImageUrl };
+        const query = id
+          ? await supabaseClient.from('produtos').update(dados).eq('id', id)
+          : await supabaseClient.from('produtos').insert([dados]);
+        if (query.error) throw query.error;
+        fecharModal(); await carregarProdutos(); alert('Salvo com sucesso!');
+      } catch (error) { alert('Erro: ' + mensagemErroImagem(error)); } finally { btn.innerHTML = 'Salvar Produto'; btn.disabled = false; }
     }
     async function excluirProduto(id) { if(confirm('Excluir?')) { await supabaseClient.from('produtos').delete().eq('id', id); carregarProdutos(); } }
 

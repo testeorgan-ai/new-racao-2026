@@ -7,11 +7,11 @@
 
 const CONFIG = {
   // ⚠️ Supabase - Suas chaves de acesso
-  SUPABASE_URL: 'https://svryftctnjyhpwanzcgk.supabase.co',
-  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2cnlmdGN0bmp5aHB3YW56Y2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDA2NTYsImV4cCI6MjA5NTExNjY1Nn0._ci2If9BfGy2lx8p5P1il2obQtHoSTdHGtZu5O8TthA',
+  SUPABASE_URL: 'https://ktyripfxszotlojjxnlm.supabase.co',
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0eXJpcGZ4c3pvdGxvamp4bmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MzYzOTgsImV4cCI6MjExMDAxMjM5OH0.gK_CoHRgk7b-F04NzhNT1_7ZnBUxpkwLp4eblEAYVc8',
   
   // 📞 WhatsApp - Número para contato (apenas números)
-  TELEFONE_WHATSAPP: '5513999999999',
+  TELEFONE_WHATSAPP: '5513992074922',
   
   // 🏪 Informações da Loja
   NOME_LOJA: 'PetShop Express',
