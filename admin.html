@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Painel Administrativo | PetShop Express</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .aba-oculta { display: none; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-slate-50 relative">
+
+  <div id="sidebar-overlay" onclick="toggleMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden transition-opacity"></div>
+
+  <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
+    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+      <h1 class="text-xl font-black text-white flex items-center gap-2">
+        <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+        PetAdmin
+      </h1>
+      <button onclick="toggleMenu()" class="md:hidden text-slate-400 hover:text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <button id="menu-dashboard" onclick="mudarAba('dashboard')" class="menu-item w-full flex items-center gap-3 bg-amber-400/10 text-amber-400 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Visão Geral
+      </button>
+      <button id="menu-promocoes" onclick="mudarAba('promocoes')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="megaphone" class="w-5 h-5"></i> Promoções Fixas
+      </button>
+      <button id="menu-cupons" onclick="mudarAba('cupons')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="gift" class="w-5 h-5"></i> Cupons & Descontos
+      </button>
+      <button id="menu-produtos" onclick="mudarAba('produtos')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="package" class="w-5 h-5"></i> Produtos
+      </button>
+      <button id="menu-categorias" onclick="mudarAba('categorias')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="tags" class="w-5 h-5"></i> Categorias
+      </button>
+      <button id="menu-midia" onclick="mudarAba('midia')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="image" class="w-5 h-5"></i> Galeria
+      </button>
+      <button id="menu-avaliacoes" onclick="mudarAba('avaliacoes')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="star" class="w-5 h-5"></i> Avaliações
+      </button>
+      <button id="menu-pedidos" onclick="mudarAba('pedidos')" class="menu-item w-full flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800 px-4 py-3 rounded-xl font-semibold transition text-left">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i> Pedidos
+      </button>
+
+      <button onclick="sairDoSistema()" class="menu-item w-full flex items-center gap-3 text-red-400 hover:text-white hover:bg-red-500/20 px-4 py-3 rounded-xl font-semibold transition text-left mt-4">
+        <i data-lucide="log-out" class="w-5 h-5"></i> Sair e voltar à loja
+      </button>
+    </nav>
+  </aside>
+
+  <main class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+    <header class="bg-white px-4 md:px-8 py-4 border-b border-slate-200 flex justify-between items-center z-10 shadow-sm">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="md:hidden p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <h2 id="titulo-pagina" class="text-xl md:text-2xl font-black text-slate-800">Visão Geral</h2>
+      </div>
+      <button id="btn-novo-produto" onclick="abrirModal()" class="aba-oculta bg-amber-400 hover:bg-amber-500 text-slate-900 px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-bold flex items-center gap-2 transition shadow-sm text-sm md:text-base whitespace-nowrap">
+        <i data-lucide="plus-circle" class="w-5 h-5 hidden md:block"></i> Novo Produto
+      </button>
+    </header>
+
+    <section id="aba-dashboard" class="flex-1 overflow-auto p-4 md:p-8">
+      <h3 class="text-lg text-slate-500 font-medium mb-6">Bem-vindo(a) ao seu painel de controle!</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-5">
+          <div class="bg-amber-100 p-4 rounded-xl text-amber-600"><i data-lucide="package" class="w-8 h-8"></i></div>
+          <div>
+            <p class="text-sm text-slate-500 font-bold uppercase">Total de Produtos</p>
+            <p id="dash-total-produtos" class="text-3xl font-black text-slate-800">--</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
+        <div class="flex flex-col gap-4 mb-5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h3 class="text-lg font-black text-slate-800">Faturamento por dia</h3>
+              <p class="text-sm text-slate-500 mt-1">Pedidos entregues no período selecionado</p>
+            </div>
+            <span id="dash-faturamento-periodo" class="text-lg font-black text-emerald-600">R$ 0,00</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div class="flex-1">
+              <label for="filtro-data-inicial" class="block text-xs font-bold uppercase text-slate-500 mb-1">Data inicial</label>
+              <input type="date" id="filtro-data-inicial" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <div class="flex-1">
+              <label for="filtro-data-final" class="block text-xs font-bold uppercase text-slate-500 mb-1">Data final</label>
+              <input type="date" id="filtro-data-final" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <button onclick="carregarFaturamentoPorDia()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition">
+              Atualizar
+            </button>
+          </div>
+        </div>
+        <div class="relative h-72">
+          <canvas id="grafico-faturamento-dia"></canvas>
+          <p id="mensagem-grafico-faturamento" class="absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-4 hidden"></p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+          <div>
+            <h3 class="text-lg font-black text-slate-800">Produtos mais vendidos</h3>
+            <p class="text-sm text-slate-500 mt-1">Pedidos entregues</p>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wide text-slate-400">Top 10</span>
+        </div>
+        <div class="relative h-72">
+          <canvas id="grafico-mais-vendidos"></canvas>
+          <p id="mensagem-grafico-vendas" class="absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-4 hidden"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-promocoes" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 max-w-3xl">
+        <h3 class="font-bold text-slate-800 mb-6 text-xl">Configurar Promoções na Vitrine</h3>
+        
+        <div class="space-y-6">
+          <div class="p-5 border border-slate-200 rounded-xl bg-slate-50">
+            <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="star" class="w-5 h-5 text-amber-500"></i> Oferta do Dia (Cachorro)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Nome do Produto em Destaque</label>
+                <input type="text" id="conf-hero-nome" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Preço em Destaque (R$)</label>
+                <input type="number" step="0.01" id="conf-hero-preco" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1">Trocar Imagem de Fundo</label>
+                <input type="file" id="conf-hero-img-file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-amber-100 file:text-amber-700">
+                <input type="hidden" id="conf-hero-img-atual">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 border border-slate-200 rounded-xl bg-slate-50">
+            <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5 text-red-500"></i> Banner Relâmpago (Vermelho)</h4>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Título Grande (Ex: Frete Grátis Hoje)</label>
+                <input type="text" id="conf-banner-titulo" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Subtítulo (Ex: Em pedidos acima de R$ 79,90)</label>
+                <input type="text" id="conf-banner-sub" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 border border-emerald-200 rounded-xl bg-emerald-50">
+            <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="qr-code" class="w-5 h-5 text-emerald-600"></i> Dados do PIX</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1">Chave PIX</label>
+                <input type="text" id="conf-pix-chave" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Nome do recebedor</label>
+                <input type="text" id="conf-pix-beneficiario" placeholder="Nome da loja ou titular" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Cidade</label>
+                <input type="text" id="conf-pix-cidade" placeholder="Ex.: Mongaguá" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1">Instruções para o cliente</label>
+                <textarea id="conf-pix-instrucoes" rows="2" placeholder="Envie o comprovante pelo WhatsApp após o pagamento." class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-400"></textarea>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">Esses dados serão exibidos somente quando o cliente escolher PIX.</p>
+          </div>
+
+          <div class="flex justify-end">
+            <button onclick="salvarConfiguracoes()" id="btn-salvar-config" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-8 py-3 rounded-xl font-bold shadow-sm transition">
+              Salvar Alterações no Site
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-cupons" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+        <h3 class="font-bold text-slate-800 mb-6 text-xl">Criar Novo Cupom de Desconto</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Código do Cupom</label>
+            <input type="text" id="cupom-codigo" placeholder="Ex: DESC10" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none uppercase">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Tipo de Desconto</label>
+            <select id="cupom-tipo" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+              <option value="percentual">% Percentual</option>
+              <option value="fixo">R$ Fixo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Valor do Desconto</label>
+            <input type="number" step="0.01" id="cupom-valor" placeholder="10" min="0" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+          </div>
+          <button onclick="salvarCupom()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-6 py-2.5 rounded-xl font-bold shadow-sm transition h-[46px]">
+            Criar Cupom
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
+                <th class="p-4 font-semibold">Código</th>
+                <th class="p-4 font-semibold">Desconto</th>
+                <th class="p-4 font-semibold">Tipo</th>
+                <th class="p-4 font-semibold">Uso</th>
+                <th class="p-4 font-semibold text-center">Status</th>
+                <th class="p-4 font-semibold text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-cupons" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-produtos" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">Cadastro em massa</h3>
+            <p class="text-sm text-slate-500 mt-1">Importe e atualize produtos por planilha CSV, ou exporte o catálogo atual.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button onclick="baixarModeloProdutos()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50">Baixar modelo CSV</button>
+            <button onclick="exportarProdutosCSV()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50">Exportar produtos</button>
+            <button onclick="abrirImportacaoProdutos()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">Importar planilha</button>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
+                <th class="p-4 font-semibold">Produto</th>
+                <th class="p-4 font-semibold">SKU</th>
+                <th class="p-4 font-semibold">Categoria</th>
+                <th class="p-4 font-semibold">Preço</th>
+                <th class="p-4 font-semibold text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-produtos" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-categorias" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+        <h3 class="font-bold text-slate-800 mb-4 text-lg">Criar Nova Categoria</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Título Visual</label>
+            <input type="text" id="cat-novo-titulo" placeholder="Como aparece na loja" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Identificador (Slug)</label>
+            <input type="text" id="cat-novo-slug" placeholder="sem espaço/acento" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+          </div>
+          <button onclick="salvarCategoria()" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm transition h-[46px]">
+            Adicionar Categoria
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
+                <th class="p-4 font-semibold">Título Visual</th>
+                <th class="p-4 font-semibold">Identificador (Slug)</th>
+                <th class="p-4 font-semibold text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-categorias" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-midia" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div id="grid-midia" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+    </section>
+
+    <section id="aba-avaliacoes" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h3 class="font-bold text-slate-800 text-xl mb-4">Avaliações de Clientes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+            <p class="text-xs text-amber-600 font-bold uppercase">Avaliações Pendentes</p>
+            <p id="stat-avaliacoes-pendentes" class="text-3xl font-black text-amber-600 mt-2">--</p>
+          </div>
+          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+            <p class="text-xs text-emerald-600 font-bold uppercase">Avaliações Aprovadas</p>
+            <p id="stat-avaliacoes-aprovadas" class="text-3xl font-black text-emerald-600 mt-2">--</p>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <p class="text-xs text-blue-600 font-bold uppercase">Média de Estrelas</p>
+            <p id="stat-media-estrelas" class="text-3xl font-black text-blue-600 mt-2">--</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
+                <th class="p-4 font-semibold">Cliente</th>
+                <th class="p-4 font-semibold">Produto</th>
+                <th class="p-4 font-semibold">Classificação</th>
+                <th class="p-4 font-semibold">Status</th>
+                <th class="p-4 font-semibold">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-avaliacoes" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="aba-pedidos" class="aba-oculta flex-1 overflow-auto p-4 md:p-8">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h3 class="font-bold text-slate-800 text-xl mb-4">Pedidos Recebidos</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+            <p class="text-xs text-amber-600 font-bold uppercase">Pedidos Pendentes</p>
+            <p id="stat-pedidos-pendentes" class="text-3xl font-black text-amber-600 mt-2">--</p>
+          </div>
+          <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <p class="text-xs text-blue-600 font-bold uppercase">Total de Pedidos</p>
+            <p id="stat-pedidos-total" class="text-3xl font-black text-blue-600 mt-2">--</p>
+          </div>
+          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+            <p class="text-xs text-emerald-600 font-bold uppercase">Faturamento Total</p>
+            <p id="stat-faturamento-total" class="text-3xl font-black text-emerald-600 mt-2">R$ --</p>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+            <p class="text-xs text-slate-600 font-bold uppercase">Ticket Médio</p>
+            <p id="stat-ticket-medio" class="text-3xl font-black text-slate-600 mt-2">R$ --</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs md:text-sm uppercase tracking-wider border-b border-slate-200">
+                <th class="p-4 font-semibold">Número</th>
+                <th class="p-4 font-semibold">Cliente</th>
+                <th class="p-4 font-semibold">Total</th>
+                <th class="p-4 font-semibold">Status</th>
+                <th class="p-4 font-semibold">Data</th>
+                <th class="p-4 font-semibold text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pedidos" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-importacao-produtos" class="fixed inset-0 bg-slate-900/70 z-[110] hidden items-center justify-center p-3 md:p-6">
+    <div class="bg-white w-full max-w-6xl max-h-[95vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="text-lg md:text-xl font-black text-slate-800">Importar produtos por CSV</h3>
+          <p class="text-xs md:text-sm text-slate-500 mt-1">Planilhas do Excel/Google Sheets podem ser exportadas como CSV.</p>
+        </div>
+        <button onclick="fecharImportacaoProdutos()" class="text-slate-500 hover:text-slate-800 bg-white p-2 rounded-full shadow-sm" aria-label="Fechar importação"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-5">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label for="arquivo-importacao-produtos" class="block text-sm font-bold text-slate-700 mb-2">Arquivo CSV</label>
+            <input id="arquivo-importacao-produtos" type="file" accept=".csv,text/csv" onchange="prepararImportacaoProdutos(event)" class="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-amber-100 file:text-amber-800">
+            <p class="text-xs text-slate-500 mt-2">Antes de importar, execute a versão atualizada de SQL_SUPABASE_UNICO.sql no Supabase. Use SKU, nome, descricao, preco, categoria, imagem_url, tag_texto e tag_cor; categoria deve ser o slug cadastrado.</p>
+          </div>
+          <div>
+            <label for="modo-importacao-produtos" class="block text-sm font-bold text-slate-700 mb-2">Quando o SKU já existir</label>
+            <select id="modo-importacao-produtos" onchange="atualizarPreviaImportacao()" class="w-full border border-slate-300 rounded-xl px-4 py-2.5">
+              <option value="somente_novos">Ignorar existentes e importar somente novos</option>
+              <option value="atualizar">Atualizar produto existente pelo SKU</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-2">No modo atualizar, os campos da planilha substituem os dados atuais do produto.</p>
+          </div>
+        </div>
+        <div id="resumo-importacao-produtos" class="text-sm text-slate-600 bg-slate-50 rounded-xl p-4">Selecione o arquivo CSV para validar os produtos.</div>
+        <div class="border border-slate-200 rounded-xl overflow-auto max-h-[42vh]">
+          <table class="w-full text-left text-sm min-w-[800px]">
+            <thead class="sticky top-0 bg-slate-100 text-slate-600">
+              <tr><th class="p-3">Linha</th><th class="p-3">SKU</th><th class="p-3">Produto</th><th class="p-3">Categoria</th><th class="p-3">Preço</th><th class="p-3">Validação</th></tr>
+            </thead>
+            <tbody id="previa-importacao-produtos"><tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum arquivo selecionado.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between gap-3">
+        <p id="resultado-importacao-produtos" class="text-sm text-slate-600 self-center"></p>
+        <div class="flex gap-2 justify-end">
+          <button onclick="fecharImportacaoProdutos()" class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200">Fechar</button>
+          <button id="btn-confirmar-importacao" onclick="confirmarImportacaoProdutos()" disabled class="px-5 py-2.5 rounded-xl font-bold bg-amber-400 text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed">Importar produtos válidos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-produto" class="fixed inset-0 bg-slate-900/70 z-[100] hidden flex justify-center items-center backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[95vh] md:max-h-[90vh]">
+      <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl">
+        <h3 id="titulo-modal" class="text-lg md:text-xl font-black text-slate-800">Cadastrar Produto</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-700 bg-white p-2 rounded-full shadow-sm"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-1">
+        <form id="form-produto" class="space-y-4 md:space-y-5">
+          <input type="hidden" id="produto-id">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">SKU (opcional)</label>
+              <input type="text" id="prod-sku" maxlength="80" placeholder="Ex.: RACAO-001" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none uppercase">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-bold text-slate-700 mb-1">Nome do Produto</label>
+              <input type="text" id="prod-nome" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">Preço (R$)</label>
+              <input type="number" step="0.01" id="prod-preco" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">Categoria</label>
+              <select id="prod-categoria" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none"><option value="">Carregando...</option></select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-bold text-slate-700 mb-1">Descrição Curta</label>
+              <input type="text" id="prod-descricao" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">Texto da Tag (Ex: Premium)</label>
+              <input type="text" id="prod-tag-texto" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">Cor da Tag</label>
+              <select id="prod-tag-cor" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+                <option value="amber-600">Amarelo</option><option value="emerald-600">Verde</option><option value="rose-600">Vermelho</option><option value="indigo-600">Índigo</option><option value="blue-500">Azul</option>
+              </select>
+            </div>
+            <div class="md:col-span-2 border-2 border-dashed border-slate-300 rounded-2xl p-4 md:p-6 text-center bg-slate-50">
+              <label class="block text-sm font-bold text-slate-700 mb-2">Imagem do Produto (WebP)</label>
+              <input type="file" id="prod-imagem-file" accept="image/*" class="w-full text-xs md:text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-amber-100 file:text-amber-700">
+              <input type="hidden" id="prod-imagem-url-atual">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex justify-end gap-3">
+        <button onclick="fecharModal()" class="px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Cancelar</button>
+        <button onclick="salvarProduto()" id="btn-salvar" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-bold shadow-sm transition">Salvar Produto</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // 🔐 Configuração segura carregada de config.js
+    if (typeof CONFIG === 'undefined') {
+      alert('❌ Erro: arquivo config.js não encontrado!\nCopie config.example.js para config.js e preencha com seus dados.');
+      throw new Error('CONFIG não definido');
+    }
+
+    const SUPABASE_URL = CONFIG.SUPABASE_URL;
+    const SUPABASE_KEY = CONFIG.SUPABASE_KEY;
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET_NAME = 'produtos-imagens';
+
+    function mensagemErroImagem(error) {
+      const detalhe = error?.message || 'Erro desconhecido ao enviar imagem.';
+      if (/bucket|storage|row.level security|permission denied|unauthorized/i.test(detalhe)) {
+        return `Falha no armazenamento da imagem: ${detalhe}\n\nNo Supabase, execute a seção "11) Storage para imagens de produtos e banner" do arquivo SQL_SUPABASE_UNICO.sql. Confirme também que o bucket "${BUCKET_NAME}" existe e que você está conectado ao painel como usuário autenticado.`;
+      }
+      return detalhe;
+    }
+
+    let produtosAdmin = [];
+    let categoriasAdmin = [];
+    let linhasImportacaoProdutos = [];
+    let graficoMaisVendidos = null;
+    let graficoFaturamentoDia = null;
+
+    // --- SEGURANÇA ---
+    async function verificarAcesso() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) window.location.replace('login.html'); 
+    }
+    verificarAcesso(); 
+
+    async function sairDoSistema() {
+      await supabaseClient.auth.signOut();
+      window.location.replace('index.html');
+    }
+
+    // --- NAVEGAÇÃO ---
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.toggle('hidden');
+    }
+
+    function mudarAba(abaDestino) {
+      ['dashboard', 'promocoes', 'cupons', 'produtos', 'categorias', 'midia', 'avaliacoes', 'pedidos'].forEach(id => {
+        document.getElementById(`aba-${id}`).classList.add('aba-oculta');
+        document.getElementById(`menu-${id}`).classList.remove('bg-amber-400/10', 'text-amber-400');
+        document.getElementById(`menu-${id}`).classList.add('text-slate-400');
+      });
+      
+      document.getElementById(`aba-${abaDestino}`).classList.remove('aba-oculta');
+      document.getElementById(`menu-${abaDestino}`).classList.remove('text-slate-400');
+      document.getElementById(`menu-${abaDestino}`).classList.add('bg-amber-400/10', 'text-amber-400');
+
+      const titulos = { 'dashboard': 'Visão Geral', 'promocoes': 'Promoções do Site', 'cupons': 'Cupons & Descontos', 'produtos': 'Produtos', 'categorias': 'Categorias', 'midia': 'Galeria', 'avaliacoes': 'Avaliações de Clientes', 'pedidos': 'Pedidos Recebidos' };
+      document.getElementById('titulo-pagina').innerText = titulos[abaDestino];
+      
+      if (abaDestino === 'produtos') document.getElementById('btn-novo-produto').classList.remove('aba-oculta');
+      else document.getElementById('btn-novo-produto').classList.add('aba-oculta');
+
+      if (!document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleMenu();
+      if (abaDestino === 'midia') carregarGaleria();
+      if (abaDestino === 'promocoes') carregarConfiguracoes();
+      if (abaDestino === 'cupons') carregarCupons();
+      if (abaDestino === 'avaliacoes') carregarAvaliacoes();
+      if (abaDestino === 'pedidos') carregarPedidos();
+    }
+
+    // --- CONFIGURAÇÕES (OFERTAS) ---
+    async function carregarConfiguracoes() {
+      const { data, error } = await supabaseClient.from('configuracoes').select('*').eq('id', 1).single();
+      if (data) {
+        document.getElementById('conf-hero-nome').value = data.hero_produto_nome || '';
+        document.getElementById('conf-hero-preco').value = data.hero_produto_preco || '';
+        document.getElementById('conf-hero-img-atual').value = data.hero_imagem_url || '';
+        document.getElementById('conf-banner-titulo').value = data.banner_titulo || '';
+        document.getElementById('conf-banner-sub').value = data.banner_subtitulo || '';
+        document.getElementById('conf-pix-chave').value = data.pix_chave || '';
+        document.getElementById('conf-pix-beneficiario').value = data.pix_beneficiario || '';
+        document.getElementById('conf-pix-cidade').value = data.pix_cidade || '';
+        document.getElementById('conf-pix-instrucoes').value = data.pix_instrucoes || '';
+      }
+    }
+
+    async function salvarConfiguracoes() {
+      const btn = document.getElementById('btn-salvar-config');
+      btn.innerText = 'Salvando...'; btn.disabled = true;
+
+      const fileInput = document.getElementById('conf-hero-img-file');
+      let finalImageUrl = document.getElementById('conf-hero-img-atual').value;
+
+      try {
+        if (fileInput.files.length > 0) {
+          const webpBlob = await otimizarImagemParaWebP(fileInput.files[0]);
+          const fileName = `hero-${Date.now()}.webp`;
+          const { error: uploadError } = await supabaseClient.storage.from(BUCKET_NAME).upload(fileName, webpBlob, { contentType: 'image/webp' });
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+          finalImageUrl = urlData.publicUrl;
+        }
+
+        const payload = {
+          hero_imagem_url: finalImageUrl,
+          hero_produto_nome: document.getElementById('conf-hero-nome').value,
+          hero_produto_preco: parseFloat(document.getElementById('conf-hero-preco').value) || 0,
+          banner_titulo: document.getElementById('conf-banner-titulo').value,
+          banner_subtitulo: document.getElementById('conf-banner-sub').value,
+          pix_chave: document.getElementById('conf-pix-chave').value.trim(),
+          pix_beneficiario: document.getElementById('conf-pix-beneficiario').value.trim(),
+          pix_cidade: document.getElementById('conf-pix-cidade').value.trim(),
+          pix_instrucoes: document.getElementById('conf-pix-instrucoes').value.trim()
+        };
+
+        const { error } = await supabaseClient.from('configuracoes').update(payload).eq('id', 1);
+        if (error) throw error;
+        alert('Promoções atualizadas com sucesso!');
+      } catch(e) {
+        alert('Erro: ' + mensagemErroImagem(e));
+      } finally {
+        btn.innerText = 'Salvar Alterações no Site'; btn.disabled = false;
+      }
+    }
+
+    // --- CATEGORIAS ---
+    async function carregarCategorias() {
+      const { data } = await supabaseClient.from('categorias').select('*').order('id', { ascending: true });
+      categoriasAdmin = data || [];
+      const tbody = document.getElementById('tabela-categorias'); tbody.innerHTML = '';
+      const select = document.getElementById('prod-categoria'); select.innerHTML = '';
+      categoriasAdmin.forEach(cat => {
+        tbody.innerHTML += `<tr class="border-b"><td class="p-4 font-bold">${cat.titulo}</td><td class="p-4 text-slate-500 font-mono text-sm">${cat.slug}</td><td class="p-4 text-right"><button onclick="excluirCategoria(${cat.id})" class="text-red-500 hover:bg-red-50 p-2 rounded-lg"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td></tr>`;
+        select.innerHTML += `<option value="${cat.slug}">${cat.titulo}</option>`;
+      });
+      lucide.createIcons();
+    }
+    async function salvarCategoria() {
+      const titulo = document.getElementById('cat-novo-titulo').value.trim();
+      let slug = document.getElementById('cat-novo-slug').value.trim().toLowerCase().replace(/[^a-z0-9]/g, ''); 
+      if(!titulo || !slug) return alert('Preencha os dois campos!');
+      const { error } = await supabaseClient.from('categorias').insert([{ titulo, slug }]);
+      if (!error) { document.getElementById('cat-novo-titulo').value=''; document.getElementById('cat-novo-slug').value=''; carregarCategorias(); alert('Criado!'); }
+    }
+    async function excluirCategoria(id) {
+      if(confirm('Apagar categoria?')) { await supabaseClient.from('categorias').delete().eq('id', id); carregarCategorias(); }
+    }
+
+    // --- PRODUTOS ---
+    async function carregarProdutos() {
+      const { data } = await supabaseClient.from('produtos').select('*').order('id', { ascending: false });
+      produtosAdmin = data || [];
+      document.getElementById('dash-total-produtos').innerText = produtosAdmin.length;
+      const tbody = document.getElementById('tabela-produtos'); tbody.innerHTML = '';
+      produtosAdmin.forEach(prod => {
+        const catAtrelada = categoriasAdmin.find(c => c.slug === prod.categoria);
+        const nomeCategoria = catAtrelada ? catAtrelada.titulo : prod.categoria;
+        tbody.innerHTML += `<tr class="border-b"><td class="p-4 flex items-center gap-3"><img src="${escapeHtml(prod.imagem_url || 'favicon.svg')}" class="w-10 h-10 rounded-lg object-cover" alt=""><p class="font-bold truncate">${escapeHtml(prod.nome)}</p></td><td class="p-4 text-slate-600">${escapeHtml(prod.sku || '-')}</td><td class="p-4 text-slate-600">${escapeHtml(nomeCategoria)}</td><td class="p-4 font-bold text-emerald-600">R$ ${Number(prod.preco).toFixed(2).replace('.',',')}</td><td class="p-4 text-right"><button onclick="editarProdutoPorId(${Number(prod.id)})" class="text-indigo-500 p-2 mr-1" aria-label="Editar ${escapeHtml(prod.nome)}"><i data-lucide="edit" class="w-5 h-5"></i></button><button onclick="excluirProduto(${Number(prod.id)})" class="text-red-500 p-2" aria-label="Excluir ${escapeHtml(prod.nome)}"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td></tr>`;
+      });
+      lucide.createIcons();
+    }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    function editarProdutoPorId(id) {
+      const produto = produtosAdmin.find(item => Number(item.id) === Number(id));
+      if (produto) abrirModal(produto);
+    }
+
+    function abrirModal(p = null) {
+      document.getElementById('form-produto').reset(); 
+      if (p) {
+        document.getElementById('titulo-modal').innerText = 'Editar Produto'; document.getElementById('produto-id').value = p.id; document.getElementById('prod-sku').value = p.sku || ''; document.getElementById('prod-nome').value = p.nome; document.getElementById('prod-preco').value = p.preco; document.getElementById('prod-categoria').value = p.categoria; document.getElementById('prod-descricao').value = p.descricao; document.getElementById('prod-tag-texto').value = p.tag_texto; document.getElementById('prod-tag-cor').value = p.tag_cor; document.getElementById('prod-imagem-url-atual').value = p.imagem_url;
+      } else {
+        document.getElementById('titulo-modal').innerText = 'Novo Produto'; document.getElementById('produto-id').value = ''; document.getElementById('prod-sku').value = ''; document.getElementById('prod-imagem-url-atual').value = '';
+      }
+      document.getElementById('modal-produto').classList.remove('hidden'); document.getElementById('modal-produto').classList.add('flex');
+    }
+    function fecharModal() { document.getElementById('modal-produto').classList.add('hidden'); document.getElementById('modal-produto').classList.remove('flex'); }
+
+    // --- IMPORTAÇÃO E EXPORTAÇÃO EM LOTE ---
+    const COLUNAS_CSV_PRODUTOS = ['sku', 'nome', 'descricao', 'preco', 'categoria', 'imagem_url', 'tag_texto', 'tag_cor'];
+    const CORES_TAG_PRODUTO = ['amber-600', 'emerald-600', 'rose-600', 'indigo-600', 'blue-500'];
+
+    function baixarCSVProdutos(nomeArquivo, linhas) {
+      const csv = '\uFEFF' + linhas.map(linha => linha.map(valor => `"${String(valor ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function baixarModeloProdutos() {
+      baixarCSVProdutos('modelo-produtos.csv', [
+        COLUNAS_CSV_PRODUTOS,
+        ['RACAO-001', 'Ração Premium para Cães', 'Descrição do produto', '89,90', 'racoes', '', 'Destaque', 'amber-600']
+      ]);
+    }
+
+    function exportarProdutosCSV() {
+      baixarCSVProdutos('produtos-exportados.csv', [
+        COLUNAS_CSV_PRODUTOS,
+        ...produtosAdmin.map(produto => COLUNAS_CSV_PRODUTOS.map(coluna => produto[coluna] ?? ''))
+      ]);
+    }
+
+    function abrirImportacaoProdutos() {
+      linhasImportacaoProdutos = [];
+      document.getElementById('arquivo-importacao-produtos').value = '';
+      document.getElementById('resultado-importacao-produtos').innerText = '';
+      document.getElementById('resumo-importacao-produtos').innerText = 'Selecione o arquivo CSV para validar os produtos.';
+      document.getElementById('previa-importacao-produtos').innerHTML = '<tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum arquivo selecionado.</td></tr>';
+      document.getElementById('btn-confirmar-importacao').disabled = true;
+      document.getElementById('modal-importacao-produtos').classList.remove('hidden');
+      document.getElementById('modal-importacao-produtos').classList.add('flex');
+    }
+
+    function fecharImportacaoProdutos() {
+      document.getElementById('modal-importacao-produtos').classList.add('hidden');
+      document.getElementById('modal-importacao-produtos').classList.remove('flex');
+    }
+
+    function lerLinhasCSV(texto, delimitador) {
+      const linhas = [];
+      let linha = [];
+      let campo = '';
+      let entreAspas = false;
+
+      for (let i = 0; i < texto.length; i++) {
+        const caractere = texto[i];
+        if (entreAspas) {
+          if (caractere === '"' && texto[i + 1] === '"') {
+            campo += '"';
+            i++;
+          } else if (caractere === '"') {
+            entreAspas = false;
+          } else {
+            campo += caractere;
+          }
+        } else if (caractere === '"' && campo.length === 0) {
+          entreAspas = true;
+        } else if (caractere === delimitador) {
+          linha.push(campo);
+          campo = '';
+        } else if (caractere === '\n' || caractere === '\r') {
+          if (caractere === '\r' && texto[i + 1] === '\n') i++;
+          linha.push(campo);
+          if (linha.some(valor => valor.trim())) linhas.push(linha);
+          linha = [];
+          campo = '';
+        } else {
+          campo += caractere;
+        }
+      }
+
+      linha.push(campo);
+      if (linha.some(valor => valor.trim())) linhas.push(linha);
+      return linhas;
+    }
+
+    function normalizarCabecalhoCSV(valor) {
+      return String(valor || '').trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s-]+/g, '_');
+    }
+
+    function converterPrecoCSV(valor) {
+      let preco = String(valor || '').trim().replace(/[R$\s]/g, '');
+      if (preco.includes(',')) preco = preco.replace(/\./g, '').replace(',', '.');
+      const numero = Number(preco);
+      return Number.isFinite(numero) ? numero : NaN;
+    }
+
+    function atualizarPreviaImportacao() {
+      const corpo = document.getElementById('previa-importacao-produtos');
+      const resumo = document.getElementById('resumo-importacao-produtos');
+      const botao = document.getElementById('btn-confirmar-importacao');
+      const modo = document.getElementById('modo-importacao-produtos').value;
+      const skusExistentes = new Set(produtosAdmin.map(produto => String(produto.sku || '').trim().toUpperCase()).filter(Boolean));
+      const validas = linhasImportacaoProdutos.filter(linha => linha.erros.length === 0 && (modo === 'atualizar' || !skusExistentes.has(linha.produto.sku)));
+      const ignoradas = linhasImportacaoProdutos.filter(linha => linha.erros.length === 0 && modo === 'somente_novos' && skusExistentes.has(linha.produto.sku)).length;
+      const invalidas = linhasImportacaoProdutos.filter(linha => linha.erros.length > 0).length;
+
+      corpo.replaceChildren();
+      if (!linhasImportacaoProdutos.length) {
+        corpo.innerHTML = '<tr><td colspan="6" class="p-4 text-slate-400 text-center">Nenhum produto encontrado no arquivo.</td></tr>';
+      } else {
+        linhasImportacaoProdutos.slice(0, 100).forEach(linha => {
+          const existente = skusExistentes.has(linha.produto.sku);
+          const status = linha.erros.length
+            ? linha.erros.join('; ')
+            : (existente && modo === 'somente_novos' ? 'SKU já cadastrado: será ignorado' : existente ? 'SKU existente: será atualizado' : 'Pronto para importar');
+          const tr = document.createElement('tr');
+          [linha.numero, linha.produto.sku, linha.produto.nome, linha.produto.categoria, Number.isFinite(linha.produto.preco) ? `R$ ${linha.produto.preco.toFixed(2).replace('.', ',')}` : '', status].forEach((valor, indice) => {
+            const td = document.createElement('td');
+            td.className = 'p-3 border-t border-slate-100';
+            td.innerText = String(valor);
+            if (indice === 5) td.classList.add(linha.erros.length ? 'text-red-600' : existente && modo === 'somente_novos' ? 'text-amber-700' : 'text-emerald-700');
+            tr.appendChild(td);
+          });
+          corpo.appendChild(tr);
+        });
+        if (linhasImportacaoProdutos.length > 100) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 6;
+          td.className = 'p-3 text-center text-slate-500 border-t';
+          td.innerText = `Prévia limitada às primeiras 100 de ${linhasImportacaoProdutos.length} linhas.`;
+          tr.appendChild(td);
+          corpo.appendChild(tr);
+        }
+      }
+
+      resumo.innerText = `${linhasImportacaoProdutos.length} linha(s) no arquivo • ${validas.length} pronta(s) para importar${modo === 'atualizar' ? ' (novos ou atualizados pelo SKU)' : ''} • ${ignoradas} existente(s) ignorada(s) • ${invalidas} com erro.`;
+      botao.disabled = validas.length === 0;
+    }
+
+    async function prepararImportacaoProdutos(evento) {
+      const arquivo = evento.target.files?.[0];
+      if (!arquivo) return;
+      if (arquivo.size > 2 * 1024 * 1024) {
+        alert('O CSV deve ter no máximo 2 MB.');
+        evento.target.value = '';
+        return;
+      }
+
+      try {
+        const texto = (await arquivo.text()).replace(/^\uFEFF/, '');
+        const delimitadores = [',', ';', '\t'];
+        const delimitador = delimitadores
+          .map(item => ({ item, colunas: lerLinhasCSV(texto, item)[0]?.length || 0 }))
+          .sort((a, b) => b.colunas - a.colunas)[0].item;
+        const linhas = lerLinhasCSV(texto, delimitador);
+        if (linhas.length < 2) throw new Error('O arquivo precisa ter cabeçalho e pelo menos uma linha de produto.');
+
+        const cabecalhos = linhas[0].map(normalizarCabecalhoCSV);
+        const aliases = {
+          sku: ['sku', 'codigo', 'codigo_produto'],
+          nome: ['nome', 'produto', 'name'],
+          descricao: ['descricao', 'description'],
+          preco: ['preco', 'price', 'valor'],
+          categoria: ['categoria', 'category', 'slug_categoria'],
+          imagem_url: ['imagem_url', 'image_url', 'url_imagem', 'imagem', 'foto'],
+          tag_texto: ['tag_texto', 'tag', 'selo'],
+          tag_cor: ['tag_cor', 'cor_tag']
+        };
+        const indices = {};
+        Object.entries(aliases).forEach(([campo, nomes]) => {
+          indices[campo] = cabecalhos.findIndex(cabecalho => nomes.includes(cabecalho));
+        });
+        const faltantes = ['sku', 'nome', 'preco', 'categoria'].filter(campo => indices[campo] < 0);
+        if (faltantes.length) throw new Error(`Colunas obrigatórias ausentes: ${faltantes.join(', ')}.`);
+
+        const slugsCategorias = new Set(categoriasAdmin.map(categoria => String(categoria.slug).trim().toLowerCase()));
+        const skusNoArquivo = new Set();
+        linhasImportacaoProdutos = linhas.slice(1).map((colunas, indice) => {
+          const ler = campo => indices[campo] < 0 ? '' : String(colunas[indices[campo]] || '').trim();
+          const sku = ler('sku').toUpperCase();
+          const preco = converterPrecoCSV(ler('preco'));
+          const categoria = ler('categoria').toLowerCase();
+          const imagemUrl = ler('imagem_url');
+          const produto = {
+            sku,
+            nome: ler('nome'),
+            descricao: ler('descricao'),
+            preco,
+            categoria,
+            imagem_url: imagemUrl,
+            tag_texto: ler('tag_texto'),
+            tag_cor: ler('tag_cor') || 'amber-600'
+          };
+          const erros = [];
+          if (!produto.sku) erros.push('SKU obrigatório');
+          else if (skusNoArquivo.has(produto.sku)) erros.push('SKU repetido no arquivo');
+          else skusNoArquivo.add(produto.sku);
+          if (!produto.nome) erros.push('Nome obrigatório');
+          if (!Number.isFinite(preco) || preco < 0) erros.push('Preço inválido');
+          if (!produto.categoria || !slugsCategorias.has(produto.categoria)) erros.push('Categoria não encontrada (use o slug)');
+          if (imagemUrl) {
+            try {
+              const url = new URL(imagemUrl);
+              if (!['http:', 'https:'].includes(url.protocol)) erros.push('URL da imagem deve usar http ou https');
+            } catch {
+              erros.push('URL da imagem inválida');
+            }
+          }
+          if (!CORES_TAG_PRODUTO.includes(produto.tag_cor)) erros.push(`Cor da tag inválida (${CORES_TAG_PRODUTO.join(', ')})`);
+          return { numero: indice + 2, produto, erros };
+        });
+        document.getElementById('resultado-importacao-produtos').innerText = '';
+        atualizarPreviaImportacao();
+      } catch (erro) {
+        linhasImportacaoProdutos = [];
+        document.getElementById('resumo-importacao-produtos').innerText = erro.message;
+        document.getElementById('btn-confirmar-importacao').disabled = true;
+      }
+    }
+
+    async function confirmarImportacaoProdutos() {
+      const botao = document.getElementById('btn-confirmar-importacao');
+      const modo = document.getElementById('modo-importacao-produtos').value;
+      const skusExistentes = new Set(produtosAdmin.map(produto => String(produto.sku || '').trim().toUpperCase()).filter(Boolean));
+      const selecionadas = linhasImportacaoProdutos.filter(linha =>
+        linha.erros.length === 0 && (modo === 'atualizar' || !skusExistentes.has(linha.produto.sku))
+      );
+      if (!selecionadas.length) return;
+      if (!confirm(`Confirmar a importação de ${selecionadas.length} produto(s)?`)) return;
+
+      botao.disabled = true;
+      botao.innerText = 'Importando...';
+      const falhas = [];
+      let processadas = 0;
+      try {
+        for (let inicio = 0; inicio < selecionadas.length; inicio += 50) {
+          const lote = selecionadas.slice(inicio, inicio + 50);
+          const produtos = lote.map(linha => linha.produto);
+          const { error } = modo === 'atualizar'
+            ? await supabaseClient.from('produtos').upsert(produtos, { onConflict: 'sku' })
+            : await supabaseClient.from('produtos').insert(produtos);
+          if (error) {
+            lote.forEach(linha => falhas.push(`Linha ${linha.numero} (SKU ${linha.produto.sku}): ${error.message}`));
+          } else {
+            processadas += lote.length;
+          }
+        }
+        await carregarProdutos();
+        const detalheFalhas = falhas.slice(0, 5).join('\n');
+        const resumo = `${processadas} produto(s) processado(s). ${falhas.length} falha(s).${falhas.length > 5 ? ` Mais ${falhas.length - 5} falha(s).` : ''}`;
+        document.getElementById('resultado-importacao-produtos').innerText = `${resumo}${detalheFalhas ? `\n${detalheFalhas}` : ''}`;
+        document.getElementById('resultado-importacao-produtos').classList.toggle('text-red-600', falhas.length > 0);
+        document.getElementById('resultado-importacao-produtos').classList.toggle('text-emerald-700', falhas.length === 0);
+        if (falhas.length === 0) {
+          linhasImportacaoProdutos = [];
+          atualizarPreviaImportacao();
+          alert(resumo);
+        }
+      } catch (erro) {
+        document.getElementById('resultado-importacao-produtos').innerText = `Erro ao importar: ${erro.message}`;
+        document.getElementById('resultado-importacao-produtos').classList.add('text-red-600');
+      } finally {
+        botao.innerText = 'Importar produtos válidos';
+        atualizarPreviaImportacao();
+      }
+    }
+
+    // --- UPLOAD WEBP E GALERIA ---
+    async function otimizarImagemParaWebP(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image(); img.src = e.target.result;
+          img.onload = function() {
+            const canvas = document.createElement('canvas'); const MAX = 800; let w = img.width, h = img.height;
+            if (w > h && w > MAX) { h *= MAX / w; w = MAX; } else if (h > MAX) { w *= MAX / h; h = MAX; }
+            canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob(resolve, 'image/webp', 0.8);
+          }
+        }; reader.readAsDataURL(file);
+      });
+    }
+
+    async function salvarProduto() {
+      const btn = document.getElementById('btn-salvar'); btn.innerHTML = 'Salvando...'; btn.disabled = true;
+      const id = document.getElementById('produto-id').value; const fileInput = document.getElementById('prod-imagem-file'); let finalImageUrl = document.getElementById('prod-imagem-url-atual').value;
+      try {
+        if (fileInput.files.length > 0) {
+          const webpBlob = await otimizarImagemParaWebP(fileInput.files[0]); const fileName = `produto-${Date.now()}.webp`;
+          const { error: uploadError } = await supabaseClient.storage.from(BUCKET_NAME).upload(fileName, webpBlob, { contentType: 'image/webp' });
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(fileName); finalImageUrl = urlData.publicUrl;
+        }
+        if (!finalImageUrl) throw new Error('Envie uma imagem.');
+        const sku = document.getElementById('prod-sku').value.trim().toUpperCase();
+        const dados = { sku: sku || null, nome: document.getElementById('prod-nome').value.trim(), preco: parseFloat(document.getElementById('prod-preco').value), categoria: document.getElementById('prod-categoria').value, descricao: document.getElementById('prod-descricao').value.trim(), tag_texto: document.getElementById('prod-tag-texto').value.trim(), tag_cor: document.getElementById('prod-tag-cor').value, imagem_url: finalImageUrl };
+        const query = id
+          ? await supabaseClient.from('produtos').update(dados).eq('id', id)
+          : await supabaseClient.from('produtos').insert([dados]);
+        if (query.error) throw query.error;
+        fecharModal(); await carregarProdutos(); alert('Salvo com sucesso!');
+      } catch (error) { alert('Erro: ' + mensagemErroImagem(error)); } finally { btn.innerHTML = 'Salvar Produto'; btn.disabled = false; }
+    }
+    async function excluirProduto(id) { if(confirm('Excluir?')) { await supabaseClient.from('produtos').delete().eq('id', id); carregarProdutos(); } }
+
+    async function carregarGaleria() {
+      const grid = document.getElementById('grid-midia'); grid.innerHTML = '<p class="text-slate-400">Buscando imagens...</p>';
+      const { data } = await supabaseClient.storage.from(BUCKET_NAME).list();
+      grid.innerHTML = '';
+      (data||[]).forEach(file => {
+        if (file.name === '.emptyFolderPlaceholder') return;
+        const { data: urlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(file.name);
+        grid.innerHTML += `<div class="bg-white p-2 rounded-xl border border-slate-200"><img src="${urlData.publicUrl}" class="w-full h-24 object-cover rounded-lg"></div>`;
+      });
+    }
+
+    // --- CUPONS ---
+    async function carregarCupons() {
+      const { data } = await supabaseClient.from('cupons').select('*').order('id', { ascending: false });
+      const cupons = data || [];
+      const tbody = document.getElementById('tabela-cupons'); tbody.innerHTML = '';
+      cupons.forEach(cupom => {
+        const tipo = cupom.tipo === 'percentual' ? '%' : 'R$';
+        const status = cupom.ativo ? '✅ Ativo' : '❌ Inativo';
+        tbody.innerHTML += `
+          <tr class="border-b">
+            <td class="p-4 font-bold text-amber-600">${cupom.codigo}</td>
+            <td class="p-4 font-bold text-emerald-600">${cupom.valor}${tipo}</td>
+            <td class="p-4 text-slate-600">${tipo === '%' ? 'Percentual' : 'Fixo'}</td>
+            <td class="p-4 text-slate-600">${cupom.usos || 0} / ${cupom.limite_uso || 'Ilimitado'}</td>
+            <td class="p-4 text-center"><button onclick="toggleCupomStatus(${cupom.id}, ${!cupom.ativo})" class="text-sm px-3 py-1 rounded-lg ${cupom.ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${status}</button></td>
+            <td class="p-4 text-right"><button onclick="excluirCupom(${cupom.id})" class="text-red-500 hover:bg-red-50 p-2"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    async function salvarCupom() {
+      const codigo = document.getElementById('cupom-codigo').value.trim().toUpperCase();
+      const tipo = document.getElementById('cupom-tipo').value;
+      const valor = parseFloat(document.getElementById('cupom-valor').value);
+
+      if (!codigo || !valor) return alert('Preencha código e valor!');
+      if (valor <= 0) return alert('Valor deve ser maior que 0!');
+      if (tipo === 'percentual' && valor > 100) return alert('Desconto percentual não pode ser maior que 100%!');
+
+      try {
+        const { error } = await supabaseClient.from('cupons').insert([{
+          codigo,
+          tipo,
+          valor,
+          ativo: true,
+          usos: 0,
+          limite_uso: null
+        }]);
+        if (error) throw error;
+
+        document.getElementById('cupom-codigo').value = '';
+        document.getElementById('cupom-valor').value = '';
+        carregarCupons();
+        alert('✅ Cupom criado com sucesso!');
+      } catch(e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+
+    async function toggleCupomStatus(id, ativo) {
+      try {
+        const { error } = await supabaseClient.from('cupons').update({ ativo }).eq('id', id);
+        if (error) throw error;
+        carregarCupons();
+      } catch(e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+
+    async function excluirCupom(id) {
+      if (confirm('Excluir cupom?')) {
+        try {
+          const { error } = await supabaseClient.from('cupons').delete().eq('id', id);
+          if (error) throw error;
+          carregarCupons();
+        } catch(e) {
+          alert('Erro: ' + e.message);
+        }
+      }
+    }
+
+    // --- AVALIAÇÕES ---
+    async function carregarAvaliacoes() {
+      try {
+        // Busca avaliações
+        const { data: avaliacoes } = await supabaseClient.from('avaliacoes').select('*').order('data_criacao', { ascending: false });
+        
+        if (!avaliacoes || avaliacoes.length === 0) {
+          document.getElementById('tabela-avaliacoes').innerHTML = '<tr><td class="p-4 text-slate-400 text-center" colspan="5">Nenhuma avaliação ainda.</td></tr>';
+          document.getElementById('stat-avaliacoes-pendentes').innerText = '0';
+          document.getElementById('stat-avaliacoes-aprovadas').innerText = '0';
+          document.getElementById('stat-media-estrelas').innerText = '0.0';
+          return;
+        }
+
+        // Calcula estatísticas
+        const pendentes = avaliacoes.filter(a => !a.aprovada).length;
+        const aprovadas = avaliacoes.filter(a => a.aprovada).length;
+        const mediaEstrelas = (avaliacoes.reduce((sum, a) => sum + a.classificacao, 0) / avaliacoes.length).toFixed(1);
+
+        document.getElementById('stat-avaliacoes-pendentes').innerText = pendentes;
+        document.getElementById('stat-avaliacoes-aprovadas').innerText = aprovadas;
+        document.getElementById('stat-media-estrelas').innerText = mediaEstrelas;
+
+        // Renderiza tabela
+        const tbody = document.getElementById('tabela-avaliacoes');
+        tbody.innerHTML = '';
+
+        for (const avaliacao of avaliacoes) {
+          const produto = produtosAdmin.find(p => p.id === avaliacao.produto_id);
+          const nomeProduto = produto ? produto.nome : 'Produto removido';
+          const estrelas = '⭐'.repeat(avaliacao.classificacao);
+          const statusBadge = avaliacao.aprovada 
+            ? '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold">✅ Aprovada</span>'
+            : '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold">⏳ Pendente</span>';
+
+          tbody.innerHTML += `
+            <tr class="border-b">
+              <td class="p-4 font-bold text-slate-900">${avaliacao.cliente_nome}</td>
+              <td class="p-4 text-slate-600 text-sm">${nomeProduto}</td>
+              <td class="p-4 text-amber-500 font-bold">${estrelas}</td>
+              <td class="p-4">${statusBadge}</td>
+              <td class="p-4 text-right space-x-2">
+                ${!avaliacao.aprovada ? `<button onclick="aprovarAvaliacao(${avaliacao.id})" class="text-emerald-500 hover:bg-emerald-50 p-2" title="Aprovar"><i data-lucide="check-circle" class="w-5 h-5"></i></button>` : ''}
+                <button onclick="excluirAvaliacao(${avaliacao.id})" class="text-red-500 hover:bg-red-50 p-2" title="Excluir"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+              </td>
+            </tr>
+          `;
+        }
+
+        lucide.createIcons();
+      } catch(e) {
+        alert('Erro ao carregar avaliações: ' + e.message);
+      }
+    }
+
+    async function aprovarAvaliacao(id) {
+      try {
+        const { error } = await supabaseClient.from('avaliacoes').update({ aprovada: true }).eq('id', id);
+        if (error) throw error;
+        carregarAvaliacoes();
+      } catch(e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+
+    async function excluirAvaliacao(id) {
+      if (confirm('Excluir avaliação?')) {
+        try {
+          const { error } = await supabaseClient.from('avaliacoes').delete().eq('id', id);
+          if (error) throw error;
+          carregarAvaliacoes();
+        } catch(e) {
+          alert('Erro: ' + e.message);
+        }
+      }
+    }
+
+    // --- PEDIDOS ---
+    async function carregarPedidos() {
+      try {
+        const { data: pedidos } = await supabaseClient.from('pedidos').select('*').order('data_pedido', { ascending: false });
+        
+        if (!pedidos || pedidos.length === 0) {
+          document.getElementById('tabela-pedidos').innerHTML = '<tr><td class="p-4 text-slate-400 text-center" colspan="6">Nenhum pedido ainda.</td></tr>';
+          document.getElementById('stat-pedidos-pendentes').innerText = '0';
+          document.getElementById('stat-pedidos-total').innerText = '0';
+          document.getElementById('stat-faturamento-total').innerText = 'R$ 0,00';
+          document.getElementById('stat-ticket-medio').innerText = 'R$ 0,00';
+          return;
+        }
+
+        // Calcula estatísticas
+        const pendentes = pedidos.filter(p => p.status === 'pendente').length;
+        const faturamentoTotal = pedidos.reduce((sum, p) => sum + p.valor_total, 0);
+        const ticketMedio = faturamentoTotal / pedidos.length;
+
+        document.getElementById('stat-pedidos-pendentes').innerText = pendentes;
+        document.getElementById('stat-pedidos-total').innerText = pedidos.length;
+        document.getElementById('stat-faturamento-total').innerText = `R$ ${faturamentoTotal.toFixed(2).replace('.', ',')}`;
+        document.getElementById('stat-ticket-medio').innerText = `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
+
+        // Renderiza tabela
+        const tbody = document.getElementById('tabela-pedidos');
+        tbody.innerHTML = '';
+
+        pedidos.forEach(pedido => {
+          const data = new Date(pedido.data_pedido).toLocaleDateString('pt-BR');
+          const statusBadge = {
+            'pendente': '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold">⏳ Pendente</span>',
+            'confirmado': '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold">✅ Confirmado</span>',
+            'em_entrega': '<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-lg text-xs font-bold">🚚 Entregando</span>',
+            'entregue': '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold">✓ Entregue</span>',
+            'cancelado': '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-bold">✗ Cancelado</span>'
+          }[pedido.status] || pedido.status;
+
+          tbody.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-4 font-mono font-bold text-slate-900">${pedido.numero_pedido}</td>
+              <td class="p-4">
+                <div class="font-bold text-slate-900">${pedido.cliente_nome}</div>
+                <div class="text-xs text-slate-500">${pedido.cliente_email || '—'}</div>
+              </td>
+              <td class="p-4 font-bold text-emerald-600">R$ ${pedido.valor_total.toFixed(2).replace('.', ',')}</td>
+              <td class="p-4">${statusBadge}</td>
+              <td class="p-4 text-sm text-slate-600">${data}</td>
+              <td class="p-4 text-right">
+                <select onchange="alterarStatusPedido(${pedido.id}, this.value)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg text-xs font-bold">
+                  <option value="">Mudar Status</option>
+                  <option value="confirmado" ${pedido.status === 'confirmado' ? 'selected' : ''}>Confirmar</option>
+                  <option value="em_entrega" ${pedido.status === 'em_entrega' ? 'selected' : ''}>Em Entrega</option>
+                  <option value="entregue" ${pedido.status === 'entregue' ? 'selected' : ''}>Entregue</option>
+                  <option value="cancelado" ${pedido.status === 'cancelado' ? 'selected' : ''}>Cancelar</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        });
+
+        lucide.createIcons();
+      } catch(e) {
+        alert('Erro ao carregar pedidos: ' + e.message);
+      }
+    }
+
+    async function alterarStatusPedido(id, novoStatus) {
+      if (!novoStatus) return;
+      try {
+        const { error } = await supabaseClient.from('pedidos').update({ status: novoStatus }).eq('id', id);
+        if (error) throw error;
+        carregarPedidos();
+        carregarMaisVendidos();
+      } catch(e) {
+        alert('Erro: ' + e.message);
+      }
+    }
+
+    async function carregarMaisVendidos() {
+      const canvas = document.getElementById('grafico-mais-vendidos');
+      const mensagem = document.getElementById('mensagem-grafico-vendas');
+      if (!canvas || !mensagem) return;
+
+      try {
+        const { data: pedidos, error } = await supabaseClient
+          .from('pedidos')
+          .select('itens, status')
+          .eq('status', 'entregue');
+        if (error) throw error;
+
+        const vendas = {};
+        (pedidos || []).forEach(pedido => {
+          const itens = typeof pedido.itens === 'string' ? JSON.parse(pedido.itens) : pedido.itens;
+          (Array.isArray(itens) ? itens : []).forEach(item => {
+            const nome = item.nome || 'Produto sem nome';
+            const quantidade = Number(item.quantidade) || 0;
+            vendas[nome] = (vendas[nome] || 0) + quantidade;
+          });
+        });
+
+        const ranking = Object.entries(vendas)
+          .sort(([, quantidadeA], [, quantidadeB]) => quantidadeB - quantidadeA)
+          .slice(0, 10);
+
+        if (graficoMaisVendidos) graficoMaisVendidos.destroy();
+        if (!ranking.length) {
+          canvas.classList.add('hidden');
+          mensagem.innerText = 'Ainda não há produtos vendidos em pedidos entregues.';
+          mensagem.classList.remove('hidden');
+          return;
+        }
+
+        canvas.classList.remove('hidden');
+        mensagem.classList.add('hidden');
+        graficoMaisVendidos = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels: ranking.map(([nome]) => nome),
+            datasets: [{
+              label: 'Unidades vendidas',
+              data: ranking.map(([, quantidade]) => quantidade),
+              backgroundColor: '#fbbf24',
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#64748b' } },
+              y: { beginAtZero: true, ticks: { precision: 0, color: '#64748b' } }
+            }
+          }
+        });
+      } catch (error) {
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Não foi possível carregar o gráfico de vendas.';
+        mensagem.classList.remove('hidden');
+        console.error('Erro ao carregar produtos mais vendidos:', error);
+      }
+    }
+
+    function formatarDataInput(data) {
+      return data.toISOString().split('T')[0];
+    }
+
+    function formatarMoeda(valor) {
+      return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`;
+    }
+
+    async function carregarFaturamentoPorDia() {
+      const canvas = document.getElementById('grafico-faturamento-dia');
+      const mensagem = document.getElementById('mensagem-grafico-faturamento');
+      const dataInicial = document.getElementById('filtro-data-inicial').value;
+      const dataFinal = document.getElementById('filtro-data-final').value;
+      const totalPeriodo = document.getElementById('dash-faturamento-periodo');
+
+      if (!dataInicial || !dataFinal || dataInicial > dataFinal) {
+        totalPeriodo.innerText = 'Período inválido';
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Informe um período válido para consultar o faturamento.';
+        mensagem.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const dataFinalInclusiva = new Date(`${dataFinal}T23:59:59.999`);
+        const { data: pedidos, error } = await supabaseClient
+          .from('pedidos')
+          .select('valor_total, data_pedido, status')
+          .eq('status', 'entregue')
+          .gte('data_pedido', `${dataInicial}T00:00:00.000`)
+          .lte('data_pedido', dataFinalInclusiva.toISOString());
+        if (error) throw error;
+
+        const faturamentoPorDia = {};
+        (pedidos || []).forEach(pedido => {
+          const dia = pedido.data_pedido.slice(0, 10);
+          faturamentoPorDia[dia] = (faturamentoPorDia[dia] || 0) + (Number(pedido.valor_total) || 0);
+        });
+
+        const labels = [];
+        const valores = [];
+        const dataAtual = new Date(`${dataInicial}T12:00:00`);
+        const dataLimite = new Date(`${dataFinal}T12:00:00`);
+        while (dataAtual <= dataLimite) {
+          const dia = formatarDataInput(dataAtual);
+          labels.push(dataAtual.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+          valores.push(faturamentoPorDia[dia] || 0);
+          dataAtual.setDate(dataAtual.getDate() + 1);
+        }
+
+        const total = valores.reduce((soma, valor) => soma + valor, 0);
+        totalPeriodo.innerText = formatarMoeda(total);
+        if (graficoFaturamentoDia) graficoFaturamentoDia.destroy();
+
+        if (!pedidos || !pedidos.length) {
+          canvas.classList.add('hidden');
+          mensagem.innerText = 'Não há faturamento de pedidos entregues neste período.';
+          mensagem.classList.remove('hidden');
+          return;
+        }
+
+        canvas.classList.remove('hidden');
+        mensagem.classList.add('hidden');
+        graficoFaturamentoDia = new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Faturamento',
+              data: valores,
+              backgroundColor: '#10b981',
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: context => formatarMoeda(context.raw) } }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#64748b', maxTicksLimit: 15 } },
+              y: { beginAtZero: true, ticks: { color: '#64748b', callback: valor => formatarMoeda(valor) } }
+            }
+          }
+        });
+      } catch (error) {
+        totalPeriodo.innerText = 'R$ 0,00';
+        canvas.classList.add('hidden');
+        mensagem.innerText = 'Não foi possível carregar o faturamento do período.';
+        mensagem.classList.remove('hidden');
+        console.error('Erro ao carregar faturamento por dia:', error);
+      }
+    }
+
+    async function inicializarPainel() {
+      const hoje = new Date();
+      const inicio = new Date(hoje);
+      inicio.setDate(hoje.getDate() - 29);
+      document.getElementById('filtro-data-inicial').value = formatarDataInput(inicio);
+      document.getElementById('filtro-data-final').value = formatarDataInput(hoje);
+      await carregarCategorias();
+      await carregarProdutos();
+      await carregarMaisVendidos();
+      await carregarFaturamentoPorDia();
+    }
+    document.addEventListener('DOMContentLoaded', inicializarPainel);
+  </script>
+</body>
+</html>
