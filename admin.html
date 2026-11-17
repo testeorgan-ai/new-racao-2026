@@ -1186,7 +1186,7 @@
               <td class="p-4 font-mono font-bold text-slate-900">${pedido.numero_pedido}</td>
               <td class="p-4">
                 <div class="font-bold text-slate-900">${pedido.cliente_nome}</div>
-                <div class="text-xs text-slate-500">${pedido.cliente_email || '—'}</div>
+                <div class="text-xs text-slate-500">${pedido.cliente_telefone || pedido.cliente_email || '—'}</div>
               </td>
               <td class="p-4 font-bold text-emerald-600">R$ ${pedido.valor_total.toFixed(2).replace('.', ',')}</td>
               <td class="p-4">${statusBadge}</td>

@@ -25,20 +25,59 @@
 
   <style>
     *{ scroll-behavior: smooth; }
-    body{ font-family: 'Inter', sans-serif; background: #f1f5f9; }
+    body{ font-family: 'Inter', sans-serif; background: #f8fafc; }
+    .storefront-main{
+      background-color: #f8fafc;
+    }
+    .storefront-main::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: .14;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 240'%3E%3Cg fill='%23c69a54' opacity='.45' transform='translate(34 34) scale(.72)'%3E%3Cellipse cx='32' cy='40' rx='15' ry='12'/%3E%3Cellipse cx='15' cy='25' rx='6' ry='8' transform='rotate(-25 15 25)'/%3E%3Cellipse cx='27' cy='17' rx='6' ry='8' transform='rotate(-8 27 17)'/%3E%3Cellipse cx='40' cy='18' rx='6' ry='8' transform='rotate(10 40 18)'/%3E%3Cellipse cx='51' cy='27' rx='6' ry='8' transform='rotate(28 51 27)'/%3E%3C/g%3E%3Cg fill='%23c69a54' opacity='.32' transform='translate(184 148) rotate(-18 32 32) scale(.5)'%3E%3Cellipse cx='32' cy='40' rx='15' ry='12'/%3E%3Cellipse cx='15' cy='25' rx='6' ry='8' transform='rotate(-25 15 25)'/%3E%3Cellipse cx='27' cy='17' rx='6' ry='8' transform='rotate(-8 27 17)'/%3E%3Cellipse cx='40' cy='18' rx='6' ry='8' transform='rotate(10 40 18)'/%3E%3Cellipse cx='51' cy='27' rx='6' ry='8' transform='rotate(28 51 27)'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 280px 240px;
+      background-repeat: repeat;
+    }
+    .storefront-main > *{ position: relative; z-index: 1; }
+    .storefront-divider{
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(100,116,139,.16), transparent);
+    }
+    .benefits-section, .location-section{ background: transparent; }
     .hero-bg{
       background: radial-gradient(circle at top right, rgba(245,158,11,0.15), transparent 30%), linear-gradient(to bottom right,#020617,#0f172a,#1e1b4b);
     }
     .glass{ backdrop-filter: blur(12px); }
-    .product-card{ transition: .25s ease; }
-    .product-card:hover{ transform: translateY(-6px); }
+    .product-card{ transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+    .product-card:hover{ transform: translateY(-5px); }
+    .product-image{ transition: transform .35s ease; }
+    .product-card:hover .product-image{ transform: scale(1.04); }
+    .product-card:focus-within{ outline: 3px solid rgba(245,158,11,.45); outline-offset: 3px; }
     .scrollbar-hide::-webkit-scrollbar{ height: 8px; }
     .scrollbar-hide::-webkit-scrollbar-thumb{ background: #cbd5e1; border-radius: 999px; }
     .scrollbar-hide::-webkit-scrollbar-track{ background: transparent; }
+    @keyframes checkoutStepIn{
+      from{ opacity: 0; transform: translateX(12px); }
+      to{ opacity: 1; transform: translateX(0); }
+    }
+    .checkout-step:not(.hidden){ animation: checkoutStepIn .22s ease-out; }
+    .checkout-progress-segment{ transition: background-color .2s ease; }
+    @media (prefers-reduced-motion: reduce){
+      .checkout-step:not(.hidden){ animation: none; }
+      .checkout-progress-segment{ transition: none; }
+    }
   </style>
 </head>
 
 <body>
+
+<svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+  <symbol id="logo-whatsapp" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+  </symbol>
+</svg>
 
 <div class="bg-amber-400 text-slate-900 text-center py-2 font-bold text-sm sticky top-0 z-50 shadow-lg">
   🚚 Delivery rápido de rações e acessórios em toda região
@@ -64,7 +103,7 @@
 
         <div class="flex flex-col sm:flex-row gap-4 mt-10">
           <a href="https://wa.me/" data-whatsapp-loja target="_blank" rel="noopener noreferrer" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-8 py-4 rounded-2xl font-bold inline-flex items-center justify-center gap-2 shadow-2xl transition">
-            <i data-lucide="message-circle"></i>
+            <svg aria-hidden="true" class="w-5 h-5 fill-current"><use href="#logo-whatsapp"></use></svg>
             Falar com a Loja
           </a>
           <a href="#categorias" class="border border-white/20 hover:bg-white/10 px-8 py-4 rounded-2xl font-semibold inline-flex items-center justify-center gap-2 transition">
@@ -93,6 +132,8 @@
   </div>
 </header>
 
+<main class="storefront-main relative overflow-hidden">
+<div class="storefront-divider relative z-20"></div>
 <section class="max-w-7xl mx-auto px-4 -mt-8 relative z-20">
   <div class="bg-white rounded-3xl shadow-2xl p-6 border border-slate-200">
     <div class="relative">
@@ -125,7 +166,8 @@
   </div>
 </section>
 
-<section class="bg-white py-20">
+<div class="storefront-divider max-w-7xl mx-auto"></div>
+<section class="benefits-section py-20">
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center max-w-2xl mx-auto">
       <h2 class="text-4xl font-black text-slate-900">Por que comprar conosco?</h2>
@@ -151,7 +193,7 @@
   </div>
 </section>
 
-<section class="bg-white py-20">
+<section class="location-section py-20">
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-10">
       <h2 class="text-4xl font-black text-slate-900">Nossa Localização</h2>
@@ -162,13 +204,14 @@
     </div>
   </div>
 </section>
+</main>
 
 <section class="bg-slate-950 text-white py-24 relative overflow-hidden">
   <div class="max-w-4xl mx-auto px-4 text-center">
     <h2 class="text-4xl lg:text-5xl font-black leading-tight">Seu pet merece o melhor</h2>
     <p class="text-slate-400 mt-6 text-lg">Tire suas dúvidas ou faça um pedido pelo WhatsApp.</p>
     <a href="https://wa.me/" data-whatsapp-loja target="_blank" rel="noopener noreferrer" class="mt-10 inline-flex items-center gap-3 bg-amber-400 hover:bg-amber-300 text-slate-950 px-10 py-5 rounded-2xl font-black text-lg shadow-2xl transition">
-      <i data-lucide="message-circle"></i> Falar no WhatsApp
+      <svg aria-hidden="true" class="w-6 h-6 fill-current"><use href="#logo-whatsapp"></use></svg> Falar no WhatsApp
     </a>
   </div>
 </section>
@@ -220,7 +263,7 @@
 
 
 <a href="https://wa.me/" data-whatsapp-loja target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-400 text-white p-5 rounded-full shadow-2xl z-40 transition">
-  <i data-lucide="message-circle"></i>
+  <svg aria-hidden="true" class="w-7 h-7 fill-current"><use href="#logo-whatsapp"></use></svg>
 </a>
 
 
@@ -232,76 +275,167 @@
   <span id="preco-total-flutuante" class="font-black text-amber-400 text-lg">R$ 0,00</span>
 </div>
 
-<div id="modal-carrinho" onclick="fecharCarrinho()" class="fixed inset-0 bg-slate-900/70 z-[100] hidden items-center justify-center p-4 transition-opacity">
+<div id="modal-carrinho" onclick="fecharCarrinho()" role="dialog" aria-modal="true" aria-labelledby="titulo-carrinho" class="fixed inset-0 bg-slate-900/70 z-[100] hidden items-center justify-center p-4 transition-opacity">
   <div onclick="event.stopPropagation()" class="bg-white w-full max-w-md max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
     
-    <div class="flex items-center justify-between p-6 border-b border-slate-100">
-      <h3 class="text-2xl font-black text-slate-900">Seu Pedido</h3>
-      <button onclick="fecharCarrinho()" class="text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
-    </div>
-
-    <div id="itens-carrinho" class="flex-1 overflow-y-auto p-6 space-y-4 max-h-[35vh]"></div>
-
-    <div class="px-6 py-5 border-t border-slate-100 bg-amber-50">
-      <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-        <i data-lucide="gift" class="w-4 h-4 text-amber-600"></i> Cupom de Desconto
-      </h4>
-      <div class="flex gap-2">
-        <input type="text" id="cupom-codigo-input" placeholder="Digite seu cupom" class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm uppercase">
-        <button onclick="aplicarCupom()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-4 py-2.5 rounded-xl font-bold transition text-sm">Aplicar</button>
-      </div>
-      <p id="msg-cupom" class="text-xs text-slate-500 mt-2"></p>
-      <div id="cupom-desconto-info" class="hidden mt-3 p-3 bg-emerald-100 rounded-lg border border-emerald-300">
-        <p class="text-sm font-bold text-emerald-800">✅ Cupom aplicado: <span id="cupom-nome-aplicado" class="text-emerald-600"></span></p>
-        <p class="text-xs text-emerald-700 mt-1">Desconto: R$ <span id="cupom-valor-desconto">0,00</span></p>
-      </div>
-    </div>
-
-    <div class="px-6 py-5 border-t border-slate-100 bg-white">
-      <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-        <i data-lucide="map-pin" class="w-4 h-4 text-amber-500"></i> Dados de Entrega
-      </h4>
-      <div class="space-y-3">
-        <input type="text" id="cliente-nome" placeholder="Seu Nome Completo" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
-        <div class="flex gap-2">
-          <input type="text" id="cliente-rua" placeholder="Rua / Avenida" class="w-2/3 border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
-          <input type="text" id="cliente-numero" placeholder="Número" class="w-1/3 border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
+    <div class="bg-slate-950 text-white px-5 pt-5 pb-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-amber-400 text-xs font-bold uppercase tracking-[.18em]">PetShop Express</p>
+          <h3 id="titulo-carrinho" class="text-2xl font-black mt-1">Seu carrinho</h3>
         </div>
-        <input type="text" id="cliente-bairro" placeholder="Bairro" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
+        <button onclick="fecharCarrinho()" aria-label="Fechar carrinho" class="text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 mt-5" aria-label="Etapas do pedido">
+        <div class="h-1.5 rounded-full flex-1 bg-amber-400 checkout-progress-segment"></div>
+        <div class="h-1.5 rounded-full flex-1 bg-white/20 checkout-progress-segment"></div>
+        <div class="h-1.5 rounded-full flex-1 bg-white/20 checkout-progress-segment"></div>
+      </div>
+      <div class="flex justify-between text-[11px] font-semibold text-slate-400 mt-2">
+        <span class="text-amber-300 checkout-step-label">Sacola</span>
+        <span class="checkout-step-label">Entrega</span>
+        <span class="checkout-step-label">Pagamento</span>
       </div>
     </div>
 
-    <div class="px-6 py-5 border-t border-slate-100 bg-white">
-      <label for="forma-pagamento" class="block text-sm font-bold text-slate-800 mb-2">Forma de pagamento</label>
-      <select id="forma-pagamento" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm">
-        <option value="pix">PIX - confirmar pelo WhatsApp</option>
-        <option value="whatsapp">Combinar pagamento pelo WhatsApp</option>
-      </select>
-      <div id="dados-pix-checkout" class="hidden mt-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-slate-700">
-        <p class="font-bold text-emerald-700 mb-2">Pagamento via PIX</p>
-        <p>Chave: <strong id="pix-chave-checkout">Configure no painel</strong></p>
-        <p>Recebedor: <span id="pix-beneficiario-checkout">-</span></p>
-        <p>Cidade: <span id="pix-cidade-checkout">-</span></p>
-        <p id="pix-instrucoes-checkout" class="text-xs text-slate-500 mt-2"></p>
-      </div>
-      <p id="aviso-pix-checkout" class="text-xs text-slate-500 mt-2">Escolha PIX para ver os dados de pagamento.</p>
+    <div id="checkout-conteudo" class="flex-1 min-h-0 overflow-y-auto bg-slate-50">
+      <section data-checkout-step="0" class="checkout-step p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-black text-slate-900">Seus produtos</h4>
+          <span id="resumo-qtd-itens" class="text-xs font-bold text-slate-500"></span>
+        </div>
+        <div id="itens-carrinho" class="space-y-3"></div>
+        <div class="mt-5 bg-white rounded-2xl border border-slate-200 p-4">
+          <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <i data-lucide="ticket-percent" class="w-4 h-4 text-amber-500"></i> Tem um cupom?
+          </h4>
+          <div class="flex gap-2 mt-3">
+            <input type="text" id="cupom-codigo-input" placeholder="Código do cupom" class="min-w-0 flex-1 border border-slate-300 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-amber-400 outline-none text-sm uppercase">
+            <button onclick="aplicarCupom()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2.5 rounded-xl font-bold transition text-sm">Aplicar</button>
+          </div>
+          <p id="msg-cupom" class="text-xs text-slate-500 mt-2"></p>
+          <div id="cupom-desconto-info" class="hidden mt-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+            <p class="text-sm font-bold text-emerald-800">Cupom <span id="cupom-nome-aplicado" class="text-emerald-600"></span> aplicado</p>
+            <p class="text-xs text-emerald-700 mt-1">Economia de R$ <span id="cupom-valor-desconto">0,00</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section data-checkout-step="1" class="checkout-step hidden p-5">
+        <div class="mb-5">
+          <h4 class="font-black text-slate-900 text-lg">Onde entregamos?</h4>
+          <p class="text-sm text-slate-500 mt-1">Deixe seus dados para a loja confirmar o pedido.</p>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label for="cliente-nome" class="block text-xs font-bold text-slate-600 mb-1.5">Seu nome</label>
+            <input type="text" id="cliente-nome" autocomplete="name" required placeholder="Nome completo" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+          </div>
+          <div>
+            <label for="cliente-telefone" class="block text-xs font-bold text-slate-600 mb-1.5">WhatsApp</label>
+            <input type="tel" id="cliente-telefone" autocomplete="tel" inputmode="tel" required placeholder="(13) 99999-9999" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+          </div>
+          <div>
+            <label for="cliente-rua" class="block text-xs font-bold text-slate-600 mb-1.5">Endereço</label>
+            <input type="text" id="cliente-rua" autocomplete="address-line1" required placeholder="Rua ou avenida" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="cliente-numero" class="block text-xs font-bold text-slate-600 mb-1.5">Número</label>
+              <input type="text" id="cliente-numero" required placeholder="Nº" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+            </div>
+            <div>
+              <label for="cliente-bairro" class="block text-xs font-bold text-slate-600 mb-1.5">Bairro</label>
+              <input type="text" id="cliente-bairro" autocomplete="address-level3" required placeholder="Seu bairro" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+            </div>
+          </div>
+          <div>
+            <label for="cliente-complemento" class="block text-xs font-bold text-slate-600 mb-1.5">Complemento <span class="font-normal text-slate-400">opcional</span></label>
+            <input type="text" id="cliente-complemento" autocomplete="address-line2" placeholder="Apto, casa ou ponto de referência" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none text-sm transition">
+          </div>
+        </div>
+      </section>
+
+      <section data-checkout-step="2" class="checkout-step hidden p-5">
+        <div class="mb-5">
+          <h4 class="font-black text-slate-900 text-lg">Como prefere pagar?</h4>
+          <p class="text-sm text-slate-500 mt-1">A loja confirma os detalhes com você pelo WhatsApp.</p>
+        </div>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-amber-400 transition">
+            <input type="radio" name="forma-pagamento" value="pix" checked class="accent-amber-500 w-4 h-4">
+            <span class="flex-1">
+              <span class="block font-bold text-slate-800">PIX</span>
+              <span class="block text-xs text-slate-500 mt-0.5">Gerar cobrança e confirmar pelo WhatsApp</span>
+            </span>
+            <i data-lucide="qr-code" class="w-5 h-5 text-emerald-600"></i>
+          </label>
+          <label class="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-amber-400 transition">
+            <input type="radio" name="forma-pagamento" value="whatsapp" class="accent-amber-500 w-4 h-4">
+            <span class="flex-1">
+              <span class="block font-bold text-slate-800">Combinar pelo WhatsApp</span>
+              <span class="block text-xs text-slate-500 mt-0.5">Converse com a loja sobre o pagamento</span>
+            </span>
+            <svg aria-hidden="true" class="w-6 h-6 text-[#25D366] fill-current"><use href="#logo-whatsapp"></use></svg>
+          </label>
+        </div>
+        <div id="dados-pix-checkout" class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-sm text-slate-700">
+          <p class="font-bold text-emerald-700 mb-2">Dados para o PIX</p>
+          <p>Chave: <strong id="pix-chave-checkout">Configure no painel</strong></p>
+          <p>Recebedor: <span id="pix-beneficiario-checkout">-</span></p>
+          <p>Cidade: <span id="pix-cidade-checkout">-</span></p>
+          <p id="pix-instrucoes-checkout" class="text-xs text-slate-500 mt-2"></p>
+        </div>
+        <p id="aviso-pix-checkout" class="hidden text-xs text-slate-500 mt-3">A loja combinará o pagamento pelo WhatsApp.</p>
+        <div class="mt-5 rounded-2xl bg-white border border-slate-200 p-4">
+          <p class="text-xs uppercase tracking-wide text-slate-500 font-bold mb-2">Resumo do pedido</p>
+          <div id="resumo-final-pedido" class="text-sm text-slate-600 space-y-1"></div>
+        </div>
+      </section>
     </div>
 
-    <div class="p-6 border-t border-slate-100 bg-slate-50">
-      <div class="flex items-center justify-between mb-4">
-        <span class="text-slate-500 font-bold">Total a Pagar:</span>
+    <div class="flex-none border-t border-slate-200 bg-white p-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-bold text-slate-500">Total do pedido</span>
         <span id="total-carrinho" class="text-2xl font-black text-emerald-600">R$ 0,00</span>
       </div>
-      <button onclick="enviarPedidoWhatsApp()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 px-6 py-4 rounded-2xl font-black text-lg shadow-xl transition flex items-center justify-center gap-2">
-        <i data-lucide="send"></i> Enviar Pedido
-      </button>
-      <button onclick="fecharCarrinho()" class="w-full text-center text-sm font-bold text-slate-500 hover:text-slate-700 mt-4 transition">
-        Continuar Comprando
+      <p id="mensagem-checkout" role="status" aria-live="polite" class="hidden text-sm font-semibold text-red-700 mb-3"></p>
+      <div class="flex gap-2">
+        <button id="btn-checkout-voltar" onclick="mudarEtapaCheckout(-1)" style="display:none" class="px-4 py-3 rounded-xl border border-slate-300 font-bold text-slate-600 hover:bg-slate-50 transition">Voltar</button>
+        <button id="btn-checkout-proxima" onclick="mudarEtapaCheckout(1)" style="display:flex" class="flex-1 bg-amber-400 hover:bg-amber-300 text-slate-950 px-5 py-3 rounded-xl font-black shadow-sm transition items-center justify-center gap-2">
+          Continuar <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+        <button id="btn-enviar-pedido" onclick="enviarPedidoWhatsApp()" style="display:none" class="flex-1 bg-amber-400 hover:bg-amber-300 disabled:opacity-60 disabled:cursor-wait text-slate-950 px-5 py-3 rounded-xl font-black shadow-sm transition items-center justify-center gap-2">
+          <i data-lucide="send" class="w-4 h-4"></i> Confirmar pedido
+        </button>
+      </div>
+      <button onclick="fecharCarrinho()" class="w-full text-center text-xs font-bold text-slate-400 hover:text-slate-700 mt-3 transition">
+        Continuar comprando
       </button>
     </div>
 
+  </div>
+</div>
+
+<div id="modal-confirmacao-pedido" class="fixed inset-0 bg-slate-950/80 z-[120] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="titulo-confirmacao-pedido">
+  <div class="bg-slate-950 text-white w-full max-w-md rounded-3xl shadow-2xl p-7 text-center border border-white/10">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center">
+      <i data-lucide="paw-print" class="w-9 h-9"></i>
+    </div>
+    <p class="text-amber-400 text-xs font-bold uppercase tracking-[.18em] mt-5">Pedido recebido pela loja</p>
+    <h3 id="titulo-confirmacao-pedido" class="text-2xl font-black mt-2">Só falta confirmar no WhatsApp</h3>
+    <p class="text-slate-300 mt-2">Seu pedido já foi registrado. Envie a mensagem para combinar os detalhes com a gente.</p>
+    <div class="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+      <p class="text-xs text-slate-400">Número do pedido</p>
+      <p id="numero-pedido-confirmado" class="font-mono text-xl font-black text-amber-400 mt-1"></p>
+    </div>
+    <p id="aviso-pix-pedido" class="hidden text-sm text-amber-200 bg-amber-400/10 border border-amber-400/30 rounded-xl p-3 mt-4">Não foi possível gerar a cobrança PIX agora. Combine o pagamento pelo WhatsApp.</p>
+    <a id="link-whatsapp-pedido" href="#" target="_blank" rel="noopener noreferrer" class="mt-6 w-full bg-amber-400 hover:bg-amber-300 text-slate-950 px-6 py-3.5 rounded-xl font-black transition inline-flex items-center justify-center gap-2">
+      <svg aria-hidden="true" class="w-5 h-5 fill-current"><use href="#logo-whatsapp"></use></svg> Continuar pelo WhatsApp
+    </a>
+    <button onclick="fecharConfirmacaoPedido()" class="w-full text-center text-sm font-bold text-slate-400 hover:text-white mt-4 transition">Fechar</button>
   </div>
 </div>
 
@@ -381,6 +515,8 @@
   let listaCategoriasGeral = []; 
   let carrinho = [];
   let cupomAplicado = null;  // Armazena cupom aplicado: {codigo, valor, tipo, desconto_total}
+  let pedidoEmAndamento = false;
+  let etapaCheckoutAtual = 0;
 
   // 2.5 Carregar carrinho do localStorage
   function carregarCarrinhoDoLocalstorage() {
@@ -441,13 +577,13 @@
   }
 
   function configurarFormaPagamento() {
-    const seletor = document.getElementById('forma-pagamento');
     const painelPix = document.getElementById('dados-pix-checkout');
     const avisoPix = document.getElementById('aviso-pix-checkout');
-    if (!seletor) return;
+    const seletores = document.querySelectorAll('input[name="forma-pagamento"]');
+    if (!seletores.length) return;
 
     function atualizarDadosPix() {
-      const usandoPix = seletor.value === 'pix';
+      const usandoPix = document.querySelector('input[name="forma-pagamento"]:checked')?.value === 'pix';
       painelPix.classList.toggle('hidden', !usandoPix);
       avisoPix.classList.toggle('hidden', usandoPix);
       if (usandoPix && window.dadosPix) {
@@ -458,7 +594,7 @@
       }
     }
 
-    seletor.addEventListener('change', atualizarDadosPix);
+    seletores.forEach(seletor => seletor.addEventListener('change', atualizarDadosPix));
     atualizarDadosPix();
   }
 
@@ -483,27 +619,36 @@
             ? produto.tag_cor
             : 'amber-600';
           const imagemProduto = produto.imagem_url
-            ? `<img src="${escapeHtml(produto.imagem_url)}" class="h-48 sm:h-56 w-full object-cover" alt="${escapeHtml(produto.nome)}" loading="lazy">`
-            : '<div class="h-48 sm:h-56 w-full bg-amber-50 flex flex-col items-center justify-center text-amber-700"><i data-lucide="image" class="w-10 h-10"></i><span class="text-sm font-semibold mt-2">Imagem não cadastrada</span></div>';
+            ? `<img src="${escapeHtml(produto.imagem_url)}" class="product-image h-full w-full object-contain p-3 sm:p-4" alt="${escapeHtml(produto.nome)}" loading="lazy" onerror="this.classList.add('hidden');this.nextElementSibling.classList.remove('hidden')"><div class="hidden h-full flex flex-col items-center justify-center text-slate-400"><i data-lucide="image" class="w-9 h-9"></i><span class="text-xs font-semibold mt-2">Imagem indisponível</span></div>`
+            : '<div class="h-full flex flex-col items-center justify-center text-slate-400"><i data-lucide="image" class="w-9 h-9"></i><span class="text-xs font-semibold mt-2">Imagem indisponível</span></div>';
           cartoesHtml += `
-            <div class="w-full min-w-0 bg-white rounded-3xl overflow-hidden shadow-xl product-card">
-              ${imagemProduto}
-              <div class="p-4 sm:p-5 flex flex-col gap-4 min-h-[220px]">
-                <div>
-                  <span class="text-xs font-bold text-${tagCor} uppercase">${escapeHtml(produto.tag_texto || 'Destaque')}</span>
-                  <h3 class="font-black text-xl mt-2 line-clamp-2">${escapeHtml(produto.nome)}</h3>
-                  <p class="text-sm text-slate-500 mt-2 line-clamp-2">${escapeHtml(produto.descricao || '')}</p>
+            <article class="w-full min-w-0 bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-md hover:shadow-xl hover:border-amber-200 product-card group flex flex-col">
+              <div class="relative h-52 sm:h-60 overflow-hidden bg-gradient-to-br from-amber-50 via-white to-slate-100">
+                ${imagemProduto}
+                <span class="absolute top-3 left-3 max-w-[75%] truncate bg-white/95 backdrop-blur text-${tagCor} px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide shadow-sm">${escapeHtml(produto.tag_texto || 'Destaque')}</span>
+              </div>
+              <div class="p-4 sm:p-5 flex flex-col flex-1">
+                <div class="flex-1">
+                  <h3 class="font-black text-lg sm:text-xl leading-snug line-clamp-2 min-h-[3.1rem]">${escapeHtml(produto.nome)}</h3>
+                  <p class="text-sm text-slate-500 mt-2 line-clamp-2 min-h-10">${escapeHtml(produto.descricao || '')}</p>
                 </div>
-                <div class="mt-auto">
-                  <span class="block text-2xl sm:text-3xl font-black text-emerald-600">R$ ${Number(produto.preco).toFixed(2).replace('.', ',')}</span>
-                  <div class="flex justify-end gap-2 mt-3">
-                    <button onclick="compartilharProduto(${Number(produto.id)})" class="bg-slate-100 hover:bg-green-100 text-green-600 w-10 h-10 sm:w-11 sm:h-11 rounded-xl font-black transition select-none flex items-center justify-center text-lg" title="Compartilhar">📱</button>
-                    <button onclick="abrirModalAvaliacao(${produto.id})" class="bg-slate-100 hover:bg-amber-100 text-amber-600 w-10 h-10 sm:w-11 sm:h-11 rounded-xl font-black transition select-none flex items-center justify-center text-lg" title="Avaliar">★</button>
-                    <button onclick="adicionarAoCarrinho(${produto.id})" class="bg-amber-400 hover:bg-amber-300 w-10 h-10 sm:w-11 sm:h-11 rounded-xl font-black text-xl transition select-none flex items-center justify-center">+</button>
+                <div class="mt-4 pt-4 border-t border-slate-100">
+                  <div class="flex items-end justify-between gap-2">
+                    <div>
+                      <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Preço</span>
+                      <span class="block text-2xl sm:text-3xl font-black text-emerald-600 leading-tight">R$ ${Number(produto.preco).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="compartilharProduto(${Number(produto.id)})" aria-label="Compartilhar ${escapeHtml(produto.nome)}" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-700 transition flex items-center justify-center" title="Compartilhar produto"><i data-lucide="share-2" aria-hidden="true" class="w-4 h-4"></i></button>
+                      <button onclick="abrirModalAvaliacao(${Number(produto.id)})" aria-label="Avaliar ${escapeHtml(produto.nome)}" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition flex items-center justify-center" title="Avaliar produto"><i data-lucide="star" class="w-4 h-4"></i></button>
+                    </div>
                   </div>
+                  <button onclick="adicionarAoCarrinho(${Number(produto.id)})" class="w-full mt-4 bg-amber-400 hover:bg-amber-300 active:scale-[.98] text-slate-950 font-black rounded-xl py-3 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> Adicionar à sacola
+                  </button>
                 </div>
               </div>
-            </div>
+            </article>
           `;
         });
       }
@@ -592,13 +737,15 @@
     const produto = listaProdutosGeral.find(p => p.id === produtoId);
     if (!produto) return;
     
-    const mensagem = `Olá! Olha que ração legal que encontrei: *${produto.nome}*\n\nPreço: R$ ${produto.preco.toFixed(2).replace('.', ',')}\n\nVem conferir no nosso site! 🐾`;
+    const urlLoja = window.location.href.split('#')[0];
+    const mensagem = `Olha o que encontrei na ${CONFIG.NOME_LOJA || 'PetShop Express'}! 🐾\n\n*${produto.nome}*\nPreço: R$ ${Number(produto.preco).toFixed(2).replace('.', ',')}\n\nRecomendo conhecer o site e conferir outros produtos:\n${urlLoja}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, '_blank');
     mostrarToast('✅ Compartilhado no WhatsApp!');
   }
 
   // 7. Lógica do Carrinho
   function adicionarAoCarrinho(idProduto) {
+    if (pedidoEmAndamento) return;
     const produto = listaProdutosGeral.find(p => p.id === idProduto);
     if (!produto) return;
     const itemNoCarrinho = carrinho.find(item => item.id === idProduto);
@@ -632,17 +779,90 @@
   }
 
   function abrirCarrinho() {
+    mudarEtapaCheckout(0, true);
     document.getElementById('modal-carrinho').classList.remove('hidden');
     document.getElementById('modal-carrinho').classList.add('flex');
     renderizarItensNoModal();
   }
 
+  function mudarEtapaCheckout(direcao, absoluto = false) {
+    if (pedidoEmAndamento) return;
+    const proximaEtapa = absoluto ? Number(direcao) : etapaCheckoutAtual + Number(direcao);
+    if (proximaEtapa < 0 || proximaEtapa > 2) return;
+
+    const mensagem = document.getElementById('mensagem-checkout');
+    if (etapaCheckoutAtual === 1 && proximaEtapa > etapaCheckoutAtual) {
+      const campos = [
+        ['cliente-nome', 'Informe seu nome completo.'],
+        ['cliente-telefone', 'Informe seu WhatsApp com DDD.'],
+        ['cliente-rua', 'Informe a rua ou avenida.'],
+        ['cliente-numero', 'Informe o número do endereço.'],
+        ['cliente-bairro', 'Informe o bairro.']
+      ];
+      const campoInvalido = campos.find(([id]) => !document.getElementById(id).value.trim());
+      const telefone = document.getElementById('cliente-telefone').value.replace(/\D/g, '');
+      if (campoInvalido) {
+        mensagem.innerText = campoInvalido[1];
+        mensagem.classList.remove('hidden');
+        document.getElementById(campoInvalido[0]).focus();
+        return;
+      }
+      if (telefone.length < 10 || telefone.length > 13) {
+        mensagem.innerText = 'Confira o WhatsApp e informe um número válido com DDD.';
+        mensagem.classList.remove('hidden');
+        document.getElementById('cliente-telefone').focus();
+        return;
+      }
+    }
+
+    etapaCheckoutAtual = proximaEtapa;
+    mensagem.classList.add('hidden');
+    document.querySelectorAll('[data-checkout-step]').forEach((etapa, indice) => {
+      etapa.classList.toggle('hidden', indice !== etapaCheckoutAtual);
+    });
+    document.querySelectorAll('.checkout-progress-segment').forEach((segmento, indice) => {
+      segmento.classList.toggle('bg-amber-400', indice <= etapaCheckoutAtual);
+      segmento.classList.toggle('bg-white/20', indice > etapaCheckoutAtual);
+    });
+    document.querySelectorAll('.checkout-step-label').forEach((rotulo, indice) => {
+      rotulo.classList.toggle('text-amber-300', indice === etapaCheckoutAtual);
+      rotulo.classList.toggle('text-slate-400', indice !== etapaCheckoutAtual);
+    });
+
+    document.getElementById('btn-checkout-voltar').style.display = etapaCheckoutAtual === 0 ? 'none' : 'block';
+    document.getElementById('btn-checkout-proxima').style.display = etapaCheckoutAtual === 2 ? 'none' : 'flex';
+    document.getElementById('btn-enviar-pedido').style.display = etapaCheckoutAtual === 2 ? 'flex' : 'none';
+    if (etapaCheckoutAtual === 2) atualizarResumoFinalPedido();
+  }
+
+  function atualizarResumoFinalPedido() {
+    const total = carrinho.reduce((soma, item) => soma + (item.preco * item.quantidade), 0);
+    const desconto = cupomAplicado ? cupomAplicado.desconto_total : 0;
+    const totalFinal = Math.max(0, total - desconto);
+    const endereco = [
+      document.getElementById('cliente-rua').value.trim(),
+      document.getElementById('cliente-numero').value.trim(),
+      document.getElementById('cliente-complemento').value.trim(),
+      document.getElementById('cliente-bairro').value.trim()
+    ].filter(Boolean).join(', ');
+    const totalItens = carrinho.reduce((soma, item) => soma + item.quantidade, 0);
+    const resumo = document.getElementById('resumo-final-pedido');
+    resumo.innerHTML = `
+      <p>${totalItens} ${totalItens === 1 ? 'item' : 'itens'} · ${escapeHtml(document.getElementById('cliente-nome').value.trim())}</p>
+      <p>${escapeHtml(endereco)}</p>
+      ${desconto ? `<p class="text-emerald-700">Desconto: −R$ ${desconto.toFixed(2).replace('.', ',')}</p>` : ''}
+      <p class="font-black text-slate-900 pt-1">Total: R$ ${totalFinal.toFixed(2).replace('.', ',')}</p>
+    `;
+  }
+
   function fecharCarrinho() {
+    if (pedidoEmAndamento) return;
     document.getElementById('modal-carrinho').classList.add('hidden');
     document.getElementById('modal-carrinho').classList.remove('flex');
   }
 
   function alterarQuantidade(idProduto, mudanca) {
+    if (pedidoEmAndamento) return;
     const itemIndex = carrinho.findIndex(item => item.id === idProduto);
     if (itemIndex > -1) {
       carrinho[itemIndex].quantidade += mudanca;
@@ -657,6 +877,7 @@
 
   // 7.5 Cupons
   async function aplicarCupom() {
+    if (pedidoEmAndamento) return;
     const codigoCupom = document.getElementById('cupom-codigo-input').value.trim().toUpperCase();
     const msgElement = document.getElementById('msg-cupom');
     const infoElement = document.getElementById('cupom-desconto-info');
@@ -719,6 +940,7 @@
   }
 
   function removerCupom() {
+    if (pedidoEmAndamento) return;
     cupomAplicado = null;
     document.getElementById('cupom-codigo-input').value = '';
     document.getElementById('cupom-codigo-input').disabled = false;
@@ -818,8 +1040,11 @@
   function renderizarItensNoModal() {
     const containerItens = document.getElementById('itens-carrinho');
     const containerTotal = document.getElementById('total-carrinho');
+    const resumoQtdItens = document.getElementById('resumo-qtd-itens');
     containerItens.innerHTML = '';
     let valorTotal = 0;
+    const totalItens = carrinho.reduce((soma, item) => soma + item.quantidade, 0);
+    resumoQtdItens.innerText = `${totalItens} ${totalItens === 1 ? 'item' : 'itens'}`;
 
     if (carrinho.length === 0) {
       containerItens.innerHTML = '<p class="text-center text-slate-400 mt-6">Seu carrinho está vazio.</p>';
@@ -831,16 +1056,16 @@
     carrinho.forEach(item => {
       valorTotal += (item.preco * item.quantidade);
       containerItens.innerHTML += `
-        <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-          <img src="${item.imagem_url}" class="w-14 h-14 rounded-xl object-cover shadow-sm">
+        <div class="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+          <img src="${escapeHtml(item.imagem_url || '')}" alt="${escapeHtml(item.nome)}" class="w-14 h-14 rounded-xl object-cover bg-slate-100">
           <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-slate-900 text-sm truncate">${item.nome}</h4>
-            <div class="text-emerald-600 font-extrabold text-sm mt-0.5">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
+            <h4 class="font-bold text-slate-900 text-sm line-clamp-2">${escapeHtml(item.nome)}</h4>
+            <div class="text-emerald-600 font-extrabold text-sm mt-1">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</div>
           </div>
           <div class="flex items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
-            <button onclick="alterarQuantidade(${item.id}, -1)" class="w-7 h-7 flex items-center justify-center bg-slate-50 rounded-lg text-slate-600 hover:text-red-500 font-bold transition">-</button>
+            <button onclick="alterarQuantidade(${Number(item.id)}, -1)" aria-label="Diminuir quantidade de ${escapeHtml(item.nome)}" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg text-slate-600 hover:text-red-500 font-bold transition">−</button>
             <span class="font-bold text-sm w-4 text-center text-slate-800">${item.quantidade}</span>
-            <button onclick="alterarQuantidade(${item.id}, 1)" class="w-7 h-7 flex items-center justify-center bg-slate-50 rounded-lg text-slate-600 hover:text-emerald-500 font-bold transition">+</button>
+            <button onclick="alterarQuantidade(${Number(item.id)}, 1)" aria-label="Aumentar quantidade de ${escapeHtml(item.nome)}" class="w-8 h-8 flex items-center justify-center bg-amber-100 rounded-lg text-slate-800 hover:bg-amber-200 font-bold transition">+</button>
           </div>
         </div>
       `;
@@ -853,111 +1078,87 @@
       if (valorFinal < 0) valorFinal = 0;
     }
 
-    containerTotal.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-slate-600 font-medium">Subtotal:</span>
-        <span class="font-bold text-slate-800">R$ ${valorTotal.toFixed(2).replace('.', ',')}</span>
-      </div>
-      ${cupomAplicado ? `
-      <div class="flex items-center justify-between mb-2 text-emerald-600 border-t border-slate-200 pt-2">
-        <span class="font-medium">Desconto (${cupomAplicado.codigo}):</span>
-        <span class="font-bold">-R$ ${cupomAplicado.desconto_total.toFixed(2).replace('.', ',')}</span>
-      </div>
-      <div class="flex items-center justify-between text-lg border-t border-slate-200 pt-2 mt-2">
-        <span class="font-black">Total a Pagar:</span>
-        <span class="text-emerald-600 font-black">R$ ${valorFinal.toFixed(2).replace('.', ',')}</span>
-      </div>
-      ` : `
-      <div class="text-2xl font-black text-emerald-600">R$ ${valorFinal.toFixed(2).replace('.', ',')}</div>
-      `}
-    `;
+    containerTotal.innerText = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+    if (etapaCheckoutAtual === 2) atualizarResumoFinalPedido();
     lucide.createIcons();
   }
 
-  // 8. Envio para o WhatsApp com Endereço e Formatação Limpa
-  async function enviarPedidoWhatsApp() {
-    if (carrinho.length === 0) return;
+  function fecharConfirmacaoPedido() {
+    const modal = document.getElementById('modal-confirmacao-pedido');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
 
-    // Coleta e Validação do Endereço
+  // 8. Registra o pedido e depois permite continuar pelo WhatsApp
+  async function enviarPedidoWhatsApp() {
+    if (pedidoEmAndamento || carrinho.length === 0) return;
+
     const nome = document.getElementById('cliente-nome').value.trim();
+    const telefone = document.getElementById('cliente-telefone').value.trim();
     const rua = document.getElementById('cliente-rua').value.trim();
     const numero = document.getElementById('cliente-numero').value.trim();
+    const complemento = document.getElementById('cliente-complemento').value.trim();
     const bairro = document.getElementById('cliente-bairro').value.trim();
+    const camposObrigatorios = [
+      ['cliente-nome', nome],
+      ['cliente-telefone', telefone],
+      ['cliente-rua', rua],
+      ['cliente-numero', numero],
+      ['cliente-bairro', bairro]
+    ];
+    const campoVazio = camposObrigatorios.find(([, valor]) => !valor);
+    const statusCheckout = document.getElementById('mensagem-checkout');
 
-    if (!nome || !rua || !numero || !bairro) {
-      alert("Por favor, preencha todos os campos do endereço para enviar o pedido.");
+    if (campoVazio) {
+      statusCheckout.innerText = 'Preencha os campos obrigatórios (*) para continuar.';
+      statusCheckout.classList.remove('hidden');
+      document.getElementById(campoVazio[0]).focus();
       return;
     }
 
-    // Calcula valores
-    let valorTotal = 0;
-    carrinho.forEach(item => {
-      valorTotal += (item.preco * item.quantidade);
-    });
+    const telefoneNumerico = telefone.replace(/\D/g, '');
+    if (telefoneNumerico.length < 10 || telefoneNumerico.length > 13) {
+      statusCheckout.innerText = 'Confira o WhatsApp: informe o DDD e um número válido.';
+      statusCheckout.classList.remove('hidden');
+      document.getElementById('cliente-telefone').focus();
+      return;
+    }
+
+    const itensPedido = carrinho.map(item => ({ ...item }));
+    const cupomPedido = cupomAplicado ? { ...cupomAplicado } : null;
+    const valorTotal = itensPedido.reduce((soma, item) => soma + (item.preco * item.quantidade), 0);
 
     let valorFinal = valorTotal;
     let desconto = 0;
-    if (cupomAplicado) {
-      desconto = cupomAplicado.desconto_total;
+    if (cupomPedido) {
+      desconto = cupomPedido.desconto_total;
       valorFinal = valorTotal - desconto;
       if (valorFinal < 0) valorFinal = 0;
     }
 
-    // Template de Mensagem (Sem emojis complexos para não quebrar)
-    let mensagem = `*NOVO PEDIDO - PETSHOP EXPRESS*\n\n`;
-    
-    mensagem += `*DADOS DO CLIENTE:*\n`;
-    mensagem += `Nome: ${nome}\n`;
-    mensagem += `Endereço: ${rua}, ${numero} - ${bairro}\n\n`;
-    
-    mensagem += `*RESUMO DO PEDIDO:*\n`;
+    const formaPagamento = document.querySelector('input[name="forma-pagamento"]:checked').value;
+    const numeroPedido = `PED-${Date.now()}`;
+    const btnEnviar = document.getElementById('btn-enviar-pedido');
+    pedidoEmAndamento = true;
+    btnEnviar.disabled = true;
+    btnEnviar.innerHTML = '<i data-lucide="loader-circle" class="w-5 h-5 animate-spin"></i> Registrando pedido...';
+    statusCheckout.innerText = '';
+    statusCheckout.classList.add('hidden');
+    lucide.createIcons();
 
-    carrinho.forEach(item => {
-      const subtotal = item.preco * item.quantidade;
-      mensagem += `- ${item.quantidade}x ${item.nome} (R$ ${item.preco.toFixed(2).replace('.', ',')})\n`;
-    });
-
-    // Adiciona cupom à mensagem se aplicado
-    if (cupomAplicado) {
-      mensagem += `\n*CUPOM APLICADO:*\n`;
-      mensagem += `Código: ${cupomAplicado.codigo}\n`;
-      mensagem += `Desconto: R$ ${cupomAplicado.desconto_total.toFixed(2).replace('.', ',')}\n`;
-    }
-
-    mensagem += `\n*SUBTOTAL: R$ ${valorTotal.toFixed(2).replace('.', ',')}*\n`;
-    if (cupomAplicado) {
-      mensagem += `*DESCONTO: -R$ ${cupomAplicado.desconto_total.toFixed(2).replace('.', ',')}*\n`;
-    }
-    mensagem += `*TOTAL A PAGAR: R$ ${valorFinal.toFixed(2).replace('.', ',')}*\n\n`;
-    const formaPagamento = document.getElementById('forma-pagamento').value;
-    const descricaoPagamento = formaPagamento === 'pix'
-      ? 'PIX (aguardando confirmação pelo WhatsApp)'
-      : 'A combinar pelo WhatsApp';
-    mensagem += `*FORMA DE PAGAMENTO: ${descricaoPagamento}*\n\n`;
-    if (formaPagamento === 'pix' && window.dadosPix?.pix_chave) {
-      mensagem += `*DADOS PARA PAGAMENTO PIX:*\n`;
-      mensagem += `Chave: ${window.dadosPix.pix_chave}\n`;
-      mensagem += `Recebedor: ${window.dadosPix.pix_beneficiario || '-'}\n`;
-      mensagem += `Cidade: ${window.dadosPix.pix_cidade || '-'}\n`;
-      if (window.dadosPix.pix_instrucoes) mensagem += `${window.dadosPix.pix_instrucoes}\n`;
-      mensagem += `\n`;
-    }
-    mensagem += `Pedido gerado pelo site. Aguardando confirmação!`;
-
-    // Salva pedido no banco ANTES de enviar WhatsApp
+    let pedidoCriado;
     try {
-      const numeroPedido = `PED-${Date.now()}`;
-      const { data: pedidoCriado, error } = await supabaseClient.from('pedidos').insert([{
+      const { data, error } = await supabaseClient.from('pedidos').insert([{
         numero_pedido: numeroPedido,
         cliente_nome: nome,
-        cliente_email: document.getElementById('cliente-email')?.value || '',
-        cliente_telefone: '',
+        cliente_telefone: telefoneNumerico,
         endereco_rua: rua,
         endereco_numero: numero,
         endereco_bairro: bairro,
-        itens: carrinho,
+        endereco_complemento: complemento || null,
+        itens: itensPedido,
         subtotal: valorTotal,
-        cupom_codigo: cupomAplicado ? cupomAplicado.codigo : null,
+        cupom_codigo: cupomPedido ? cupomPedido.codigo : null,
         desconto_cupom: desconto,
         valor_total: valorFinal,
         forma_pagamento: formaPagamento,
@@ -965,37 +1166,72 @@
         status: 'pendente'
       }]).select('id').single();
 
-      if (error) {
-        console.error('Erro ao salvar pedido:', error);
-        alert('⚠️ Pedido criado mas não foi salvo no banco. Tente novamente mais tarde.');
-      } else {
-        if (formaPagamento === 'pix' && pedidoCriado?.id) {
-          const { data: cobrancaPix, error: erroPix } = await supabaseClient.functions.invoke('criar-cobranca-pix', {
-            body: { pedidoId: pedidoCriado.id }
-          });
-
-          if (!erroPix && cobrancaPix?.invoiceUrl) {
-            mensagem += `\n\n*PAGAMENTO PIX:*\n${cobrancaPix.invoiceUrl}`;
-          } else if (erroPix) {
-            console.error('Não foi possível gerar a cobrança PIX:', erroPix);
-          }
-        }
-
-        // Adiciona número do pedido na mensagem
-        mensagem = `*Pedido #${numeroPedido}*\n\n` + mensagem;
-      }
-    } catch (e) {
-      console.error('Erro:', e);
+      if (error) throw error;
+      pedidoCriado = data;
+    } catch (error) {
+      console.error('Erro ao registrar pedido:', error);
+      statusCheckout.innerText = 'Não foi possível confirmar o registro do pedido. Mantivemos seu carrinho. Confira a conexão e, se o problema persistir, fale com a loja antes de tentar novamente.';
+      statusCheckout.classList.remove('hidden');
+      pedidoEmAndamento = false;
+      btnEnviar.disabled = false;
+      btnEnviar.innerHTML = '<i data-lucide="send"></i> Confirmar pedido';
+      lucide.createIcons();
+      return;
     }
 
-    // Envia para WhatsApp
-    window.open(`https://wa.me/${TELEFONE_WHATSAPP}?text=${encodeURIComponent(mensagem)}`, '_blank');
-    
-    // Limpa carrinho
+    let mensagem = `*NOVO PEDIDO - PETSHOP EXPRESS*\n\n`;
+    mensagem += `*Pedido #${numeroPedido}*\n\n`;
+    mensagem += `*DADOS DO CLIENTE:*\nNome: ${nome}\nWhatsApp: ${telefone}\n`;
+    mensagem += `Endereço: ${rua}, ${numero}${complemento ? ` - ${complemento}` : ''} - ${bairro}\n\n`;
+    mensagem += `*RESUMO DO PEDIDO:*\n`;
+    itensPedido.forEach(item => {
+      mensagem += `- ${item.quantidade}x ${item.nome} (R$ ${item.preco.toFixed(2).replace('.', ',')})\n`;
+    });
+    if (cupomPedido) {
+      mensagem += `\n*Cupom: ${cupomPedido.codigo}*\nDesconto: R$ ${desconto.toFixed(2).replace('.', ',')}\n`;
+    }
+    mensagem += `\n*SUBTOTAL: R$ ${valorTotal.toFixed(2).replace('.', ',')}*\n`;
+    if (cupomPedido) mensagem += `*DESCONTO: -R$ ${desconto.toFixed(2).replace('.', ',')}*\n`;
+    mensagem += `*TOTAL A PAGAR: R$ ${valorFinal.toFixed(2).replace('.', ',')}*\n\n`;
+    mensagem += `*FORMA DE PAGAMENTO: ${formaPagamento === 'pix' ? 'PIX' : 'A combinar pelo WhatsApp'}*\n`;
+
+    let avisoPix = false;
+    if (formaPagamento === 'pix' && pedidoCriado?.id) {
+      try {
+        const { data: cobrancaPix, error: erroPix } = await supabaseClient.functions.invoke('criar-cobranca-pix', {
+          body: { pedidoId: pedidoCriado.id }
+        });
+        if (erroPix) throw erroPix;
+        if (cobrancaPix?.invoiceUrl) {
+          mensagem += `\n*PAGAMENTO PIX:*\n${cobrancaPix.invoiceUrl}\n`;
+        } else {
+          avisoPix = true;
+        }
+      } catch (error) {
+        console.error('Não foi possível gerar a cobrança PIX:', error);
+        avisoPix = true;
+      }
+    }
+    mensagem += `\nPedido gerado pelo site. Aguardando confirmação!`;
+
+    pedidoEmAndamento = false;
+    btnEnviar.disabled = false;
+    btnEnviar.innerHTML = '<i data-lucide="send"></i> Confirmar pedido';
+    lucide.createIcons();
     carrinho = [];
     cupomAplicado = null;
+    salvarCarrinhoLocalstorage();
     atualizarCarrinhoVisual();
     fecharCarrinho();
+
+    document.getElementById('numero-pedido-confirmado').innerText = numeroPedido;
+    document.getElementById('aviso-pix-pedido').classList.toggle('hidden', !avisoPix);
+    document.getElementById('link-whatsapp-pedido').href =
+      `https://wa.me/${TELEFONE_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+    const modalConfirmacao = document.getElementById('modal-confirmacao-pedido');
+    modalConfirmacao.classList.remove('hidden');
+    modalConfirmacao.classList.add('flex');
+    document.getElementById('link-whatsapp-pedido').focus();
   }
 
   document.addEventListener('DOMContentLoaded', iniciarSistema);

@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
   cliente_telefone VARCHAR(20),
   endereco_rua VARCHAR(200) NOT NULL,
   endereco_numero VARCHAR(20) NOT NULL,
+  endereco_complemento VARCHAR(200),
   endereco_bairro VARCHAR(100) NOT NULL,
   itens JSONB NOT NULL,
   subtotal NUMERIC(10,2) NOT NULL,
@@ -135,6 +136,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
 );
 
 ALTER TABLE pedidos
+  ADD COLUMN IF NOT EXISTS endereco_complemento VARCHAR(200),
   ADD COLUMN IF NOT EXISTS forma_pagamento VARCHAR(30) NOT NULL DEFAULT 'whatsapp',
   ADD COLUMN IF NOT EXISTS status_pagamento VARCHAR(30) NOT NULL DEFAULT 'pendente',
   ADD COLUMN IF NOT EXISTS id_cobranca VARCHAR(120),
